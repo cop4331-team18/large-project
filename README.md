@@ -1,2 +1,8 @@
-# large-project
-Will rename after
+# Get Started
+
+## Frontend 
+```
+cd frontend
+npm i
+npm run dev
+```
