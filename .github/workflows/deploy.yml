@@ -1,0 +1,27 @@
+name: Deploy app on push to main branch (AWS Lightsail - Node)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+          
+jobs:
+  deploy:
+  
+    runs-on: self-hosted
+    
+    steps:
+      - name: File Permissions
+        run: |
+            sudo chown -R $USER:$USER .
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build frontend and move frontend files to desired directory
+        run: |
+            cd ./frontend
+            npm i
+            npm run build
+            sudo rsync -acv --delete ./dist/ /home/bitnami/htdocs/
+      - name: Move backend files to desired directory and run backend
+        run: |
