@@ -18,10 +18,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build frontend and move frontend files to desired directory
+        env:
+          FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
         run: |
+            echo "$FRONTEND_ENV" > ./frontend/.env
             cd ./frontend
             npm i
             npm run build
             sudo rsync -acv --delete ./dist/ /home/bitnami/htdocs/
       - name: Move backend files to desired directory and run backend
+        env:
+          BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
         run: |
+            sudo rsync -acv --delete ./backend/ /home/bitnami/backend/
+            cd /home/bitnami/backend
+            sudo chown -R $USER:$USER .
+            echo "$BACKEND_ENV" > ./.env
+            npm i
+            sudo npm run start

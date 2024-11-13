@@ -11,5 +11,5 @@ npm run dev
 ```
 cd backend
 npm i
-npm run start
+npm run dev
 ```
