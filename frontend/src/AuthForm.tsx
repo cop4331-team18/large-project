@@ -11,8 +11,7 @@ function AuthForm() {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/login', { username, password });
-      // handle successful login (store token, redirect, etc.)
+      await axios.post('/api/login', { username, password });
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -25,8 +24,7 @@ function AuthForm() {
       return;
     }
     try {
-      const response = await axios.post('/api/signup', { username, password });
-      // handle successful signup (store token, redirect, etc.)
+      await axios.post('/api/signup', { username, password });
     } catch (error) {
       console.error('Signup failed:', error);
     }
