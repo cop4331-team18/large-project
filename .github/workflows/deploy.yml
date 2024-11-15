@@ -18,10 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build frontend and move frontend files to desired directory
-        env:
-          FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
         run: |
-            echo "$FRONTEND_ENV" > ./frontend/.env
             cd ./frontend
             npm i
             npm run build
