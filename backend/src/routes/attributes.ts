@@ -1,19 +1,18 @@
-//adding attributes
+//adding attributes updated
 
 import { attributes } from "../util/attrData";
+import { MONGO_CONNECTION_STRING, MONGO_DB_NAME } from "../util/constants";
 const { MongoClient } = require("mongodb");
 
-
-
 async function addToDB() {
-    const client = new MongoClient(uri);
+    const client = new MongoClient(MONGO_CONNECTION_STRING);
 
     try {
       await client.connect();
       console.log("Successful connection");
 
       //database being used
-      const database = client.db("myDatabase");
+      const database = client.db(MONGO_DB_NAME)
       const collection = database.colllection("profileAttributes");
 
       for (const document of attributes) {
