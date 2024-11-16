@@ -3,7 +3,7 @@
 import { attributes } from "../util/attrData";
 const { MongoClient } = require("mongodb");
 
-const uri = "mongodb+srv://dylanrankine2:3P5UiGri0TiwwTeL@log1.xni4s.mongodb.net/?retryWrites=true&w=majority&appName=log1";
+
 
 async function addToDB() {
     const client = new MongoClient(uri);
