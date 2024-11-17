@@ -1,19 +1,30 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
-import axios from 'axios';
-import './AuthForm.css';
+import { useState, ChangeEvent, FormEvent } from "react";
+import axios from "axios";
+import "./AuthForm.css";
 
 function AuthForm() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
-  const [username, setUsername] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await axios.post('/api/login', { username, password });
+      const response = await axios.post(`${process.env.SERVER_BASE_URL}/login/signup`, {
+        username,
+        password,
+      });
+      if (response.status === 200) {
+        alert("Login successful!");
+        window.location.href = "/"; // Redirect to homepage
+      }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
+      alert("Invalid username or password.");
     }
   };
 
@@ -24,23 +35,35 @@ function AuthForm() {
       return;
     }
     try {
-      await axios.post('/api/signup', { username, password });
-    } catch (error) {
-      console.error('Signup failed:', error);
+      const response = await axios.post(`${process.env.SERVER_BASE_URL}/login/signup`, {
+        username,
+        password,
+        email,
+        firstName,
+        lastName,
+      });
+      if (response.status === 201) {
+        alert("Signup successful! Please verify your email.");
+        setIsLogin(true);
+      }
+    } catch (error: any) {
+      console.error("Signup failed:", error);
+      alert(error.response?.data?.error || "Signup failed. Please try again.");
     }
   };
 
-  const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) =>
     setUsername(e.target.value);
-  };
-
-  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>) =>
     setPassword(e.target.value);
-  };
-
-  const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleConfirmPasswordChange = (e: ChangeEvent<HTMLInputElement>) =>
     setConfirmPassword(e.target.value);
-  };
+  const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setEmail(e.target.value);
+  const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setFirstName(e.target.value);
+  const handleLastNameChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setLastName(e.target.value);
 
   return (
     <div className="main">
@@ -61,7 +84,7 @@ function AuthForm() {
           />
           <button onClick={handleLogin}>Login</button>
           <p>
-            Don't have an account?{' '}
+            Don't have an account?{" "}
             <a href="#" onClick={() => setIsLogin(false)}>
               Create an account
             </a>
@@ -77,6 +100,24 @@ function AuthForm() {
             onChange={handleUsernameChange}
           />
           <input
+            type="text"
+            placeholder="First Name"
+            value={firstName}
+            onChange={handleFirstNameChange}
+          />
+          <input
+            type="text"
+            placeholder="Last Name"
+            value={lastName}
+            onChange={handleLastNameChange}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={handleEmailChange}
+          />
+          <input
             type="password"
             placeholder="Create Password"
             value={password}
@@ -90,7 +131,7 @@ function AuthForm() {
           />
           <button onClick={handleSignUp}>Sign Up</button>
           <p>
-            Already have an account?{' '}
+            Already have an account?{" "}
             <a href="#" onClick={() => setIsLogin(true)}>
               Login here
             </a>
