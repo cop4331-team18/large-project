@@ -4,15 +4,24 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { db } from '../util/db';
 import { returnWithErrorJson, returnWithOKJson, USER_COLLECTION_NAME } from '../util/constants';
 import { User } from '../util/types';
-import { InsertOneResult, WithId } from 'mongodb';
+import { InsertOneResult, ObjectId, WithId } from 'mongodb';
 import crypto from 'crypto';
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
 export const loginRouter: Router = express.Router();
 
 const HASH_ITERATIONS: number = 310_000;
 const HASH_KEYLEN: number = 32;
 const HASH_METHOD: string = "sha256";
+
+// Returns the reqUser that may have updated fields after log in/sign up.
+export async function getReqUser(req: Request): Promise<WithId<User> | null> {
+    if (!req || !req.user) {
+        return null;
+    }
+    const reqUser: Express.User = req.user;
+    return await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": new ObjectId(reqUser._id), "username": reqUser.username});
+}
 
 passport.use(new LocalStrategy(async (username: string, password: string, done) => {
     username = username.toLowerCase();
@@ -52,7 +61,7 @@ loginRouter.post("/password", passport.authenticate('local'), async (req: Reques
 });
 
 loginRouter.get("/status", async (req: Request, res: Response) => {
-    const user: any = req.user as any;
+    const user: any = await getReqUser(req) as any;
     if (user) {
         delete user.password;
         delete user.salt;
@@ -83,11 +92,15 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
     const salt = crypto.randomBytes(16).toString('hex');
     const body: SignUpBody = req.body;
     const usernameRegex: RegExp = new RegExp("^[\\w_]{3,15}$");
+    const emailRegex: RegExp = new RegExp("^[\\w-\\.]{1,30}@([\\w-]{1,30}\\.){1,5}[\\w-]{2,4}$")
     if (!body.username || !usernameRegex.test(body.username)) {
         returnWithErrorJson(res, "Username should be between 3-15 characters, containing only letters, numbers, and _");
         return;
     } else if (!body.password || body.password.length < 4) {
         returnWithErrorJson(res, "Password needs to be at least 4 characters");
+        return;
+    } else if (!body.email || !emailRegex.test(body.email)) {
+        returnWithErrorJson(res, "Email provided is not valid");
         return;
     }
     body.username = body.username.toLowerCase();
@@ -102,6 +115,28 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
             returnWithErrorJson(res, "Error while signing up.");
             return;
         }
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+        const verificationUrl = `${process.env.SERVER_BASE_URL}/login/verify?token=${verificationToken}`;
+        const mailOptions: nodemailer.SendMailOptions = {
+            from: process.env.EMAIL_USER,
+            to: body.email,
+            subject: 'Verify Your Email',
+            html: `<p>Welcome, ${body.username}!</p>
+                   <p>Please verify your email by clicking the link below:</p>
+                   <a href="${verificationUrl}">Verify Email</a>`,
+        };
+        try {
+            await transporter.sendMail(mailOptions);
+        } catch (error) {
+            returnWithErrorJson(res, `Failed to send verification email:\n${error}`);
+            return;
+        }
         const result: InsertOneResult<User> = await db.collection<User>(USER_COLLECTION_NAME).insertOne({
             username: body.username,
             password: hashedPassword.toString('hex'),
@@ -113,29 +148,11 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
             isVerified: false,
             verificationToken: verificationToken,
         });
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-        const verificationUrl = `${process.env.SERVER_BASE_URL}/login/verify?token=${verificationToken}`;
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: body.email,
-            subject: 'Verify Your Email',
-            html: `<p>Welcome, ${body.firstName}!</p>
-                   <p>Please verify your email by clicking the link below:</p>
-                   <a href="${verificationUrl}">Verify Email</a>`,
-        };
-        try {
-            await transporter.sendMail(mailOptions);
+        const user: WithId<User> = (await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
+        req.login(user, () => {
             returnWithOKJson(res);
-        } catch (error) {
-            console.error(error);
-            returnWithErrorJson(res, "Failed to send verification email.");
-        }
+            return;
+        })
     });
 });
 
