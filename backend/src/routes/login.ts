@@ -31,6 +31,12 @@ passport.use(new LocalStrategy(async (username: string, password: string, done) 
             message: `User ${username} does not exist.`,
         });
     }
+    console.log(user)
+    // if (!user.isVerified) {
+    //     return done(null, false, {
+    //         message: `Verify your email before continuing.`,
+    //     });
+    // }
     crypto.pbkdf2(password, user.salt, HASH_ITERATIONS, HASH_KEYLEN, HASH_METHOD, (err: Error | null, hashedPassword: Buffer) => {
         if (err) {
             return done(err);
