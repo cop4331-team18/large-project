@@ -2,11 +2,14 @@ import { WithId } from "mongodb";
 
 export type User = {
     username: string,
+    email: string,
     password: string,
     salt: string,
     firstName: string,
     lastName: string,
-    joinedAt: Date
+    joinedAt: Date,
+    isVerified: boolean,
+    verificationToken?: string | null;
 }
 
 type MyUser = User;
