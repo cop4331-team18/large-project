@@ -1,6 +1,5 @@
 import dotenv from 'dotenv';
 import { Response } from 'express';
-import {}
 dotenv.config();
 
 export const PORT: string = process.env.PORT || "5000";
