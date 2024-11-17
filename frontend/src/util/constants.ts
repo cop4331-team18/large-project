@@ -1,0 +1,1 @@
+export const SERVER_BASE_URL: string = "http://54.210.31.202/api"

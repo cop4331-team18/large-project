@@ -1,6 +1,7 @@
 import { useState, ChangeEvent, FormEvent } from "react";
 import axios from "axios";
 import "./AuthForm.css";
+import { SERVER_BASE_URL } from "./util/constants";
 
 function AuthForm() {
   const [isLogin, setIsLogin] = useState<boolean>(true);
@@ -14,7 +15,7 @@ function AuthForm() {
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.SERVER_BASE_URL}/login/signup`, {
+      const response = await axios.post(`${SERVER_BASE_URL}/login/password`, {
         username,
         password,
       });
@@ -35,14 +36,14 @@ function AuthForm() {
       return;
     }
     try {
-      const response = await axios.post(`${process.env.SERVER_BASE_URL}/login/signup`, {
+      const response = await axios.post(`${SERVER_BASE_URL}/login/signup`, {
         username,
         password,
         email,
         firstName,
         lastName,
       });
-      if (response.status === 201) {
+      if (response.status === 200) {
         alert("Signup successful! Please verify your email.");
         setIsLogin(true);
       }

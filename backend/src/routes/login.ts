@@ -71,6 +71,7 @@ loginRouter.get("/status", async (req: Request, res: Response) => {
     if (user) {
         delete user.password;
         delete user.salt;
+        delete user.verificationToken;
         res.status(200).json({ user: user, loginStatus: true });
         return;
     }
