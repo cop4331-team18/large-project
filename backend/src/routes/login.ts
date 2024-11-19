@@ -166,26 +166,23 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
 // Verification Endpoint
 loginRouter.get("/verify", async (req: Request, res: Response) => {
     const token = req.query.token as string;
-    const reqUser: Express.User | undefined = req.user;
-
+    const reqUser: Express.User | null = await getReqUser(req);
     if (!reqUser) {
         returnWithErrorJson(res, "User not logged in.");
         return;
-    }
-
-    if (!token) {
+    } else if (!token) {
         returnWithErrorJson(res, "Verification token is required.");
         return;
-    }
-
-    const user: WithId<User> | null = await db.collection<User>(USER_COLLECTION_NAME).findOne({ verificationToken: token, username: reqUser.username });
-    if (!user) {
+    } else if (reqUser.isVerified) {
+        returnWithErrorJson(res, "User has their email verified already.");
+        return;
+    } else if (reqUser.verificationToken !== token) {
         returnWithErrorJson(res, "Invalid or expired verification token.");
         return;
     }
 
     const updateResult = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
-        { _id: user._id },
+        { _id: reqUser._id },
         { $set: { isVerified: true, verificationToken: null } }
     );
 
