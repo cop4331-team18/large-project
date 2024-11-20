@@ -104,6 +104,7 @@ attr.post("/attributes/user/delete", async (req: Request, res: Response) => {
     } catch (error) {
         console.error("Error deleting attribute:", error);
         returnWithErrorJson(res, "Attribute was not successfully deleted.");
+    }
 });
 
 export default attr;
