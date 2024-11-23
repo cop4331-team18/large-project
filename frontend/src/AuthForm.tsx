@@ -48,6 +48,8 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
       setAuthErrorText("Passwords don't match!");
       return;
     }
+    const button = e.currentTarget;
+    button.setAttribute("disabled", "true");
     try {
       const response = await apiCall.post(`/login/signup`, {
         username,
@@ -64,6 +66,7 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
       console.error("Signup failed:", error);
       setAuthErrorText(error.response?.data?.error || "Signup failed. Please try again.");
     }
+    button.removeAttribute("disabled");
   };
 
   const handleUsernameChange = (e: ChangeEvent<HTMLInputElement>) =>

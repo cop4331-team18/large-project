@@ -4,7 +4,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { db } from '../util/db';
 import { returnWithErrorJson, returnWithOKJson, USER_COLLECTION_NAME } from '../util/constants';
 import { User, UserToJSON } from '../util/types';
-import { InsertOneResult, ObjectId, WithId } from 'mongodb';
+import { InsertOneResult, MongoServerError, ObjectId, WithId } from 'mongodb';
 import crypto from 'crypto';
 import nodemailer from "nodemailer";
 
@@ -131,23 +131,31 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
             returnWithErrorJson(res, `Failed to send verification email:\n${error}`);
             return;
         }
-        const result: InsertOneResult<User> = await db.collection<User>(USER_COLLECTION_NAME).insertOne({
-            username: body.username,
-            password: hashedPassword.toString('hex'),
-            email : body.email,
-            firstName: body.firstName,
-            lastName: body.lastName,
-            salt: salt,
-            joinedAt: new Date(),
-            isVerified: false,
-            verificationToken: verificationToken,
-            attributes: [],
-        });
-        const user: WithId<User> = (await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
-        req.login(user, () => {
-            returnWithOKJson(res);
-            return;
-        })
+        try {
+            const result: InsertOneResult<User> = await db.collection<User>(USER_COLLECTION_NAME).insertOne({
+                username: body.username,
+                password: hashedPassword.toString('hex'),
+                email : body.email,
+                firstName: body.firstName,
+                lastName: body.lastName,
+                salt: salt,
+                joinedAt: new Date(),
+                isVerified: false,
+                verificationToken: verificationToken,
+                attributes: [],
+            });
+            const user: WithId<User> = (await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
+            req.login(user, () => {
+                returnWithOKJson(res);
+                return;
+            })
+        } catch (error) {
+            if (error instanceof MongoServerError) {
+                returnWithErrorJson(res, `Failed to create user: ${error.message}`);
+            } else {
+                returnWithErrorJson(res, `Failed to create user: ${err}`)
+            }
+        }
     });
 });
 
