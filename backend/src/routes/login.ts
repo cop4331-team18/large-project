@@ -3,7 +3,7 @@ import passport from 'passport';
 import { Strategy as LocalStrategy } from 'passport-local';
 import { db } from '../util/db';
 import { returnWithErrorJson, returnWithOKJson, USER_COLLECTION_NAME } from '../util/constants';
-import { User } from '../util/types';
+import { User, UserToJSON } from '../util/types';
 import { InsertOneResult, ObjectId, WithId } from 'mongodb';
 import crypto from 'crypto';
 import nodemailer from "nodemailer";
@@ -61,15 +61,8 @@ loginRouter.post("/password", passport.authenticate('local'), async (req: Reques
 });
 
 loginRouter.get("/status", async (req: Request, res: Response) => {
-    const user: any = await getReqUser(req) as any;
-    if (user) {
-        delete user.password;
-        delete user.salt;
-        delete user.verificationToken;
-        res.status(200).json({ user: user, loginStatus: true });
-        return;
-    }
-    res.status(200).json({ user: null, loginStatus: false });
+    const user: UserToJSON | null = await getReqUser(req);
+    res.status(200).json({ user: user, loginStatus: user != null });
 });
 
 loginRouter.post("/logout", async (req: Request, res: Response, next: NextFunction) => {

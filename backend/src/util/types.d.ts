@@ -13,6 +13,8 @@ export type User = {
     attributes: string[],
 }
 
+export type UserToJSON = Omit<WithId<User>, 'password' | 'salt' | 'verificationToken'>;
+
 type MyUser = User;
 
 declare global {

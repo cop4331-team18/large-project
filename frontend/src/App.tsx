@@ -1,30 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AuthForm from './AuthForm';
 import HomePage from './HomePage';
-import { SERVER_BASE_URL } from './util/constants';
+import { apiCall, User } from './util/constants';
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [user, setUser] = useState<any>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  const fetchUserStatus = async () => {
+    const response = await apiCall.get(`/login/status`);
+    const data: any = response.data;
+    console.log(data);
+    setIsLoggedIn(data.loginStatus as boolean);
+    setUser(data.user as User);
+  };
 
   useEffect(() => {
-    const fetchUserStatus = async () => {
-      const response = await fetch(`${SERVER_BASE_URL}/login/status`);
-      const data = await response.json();
-      setIsLoggedIn(data.loginStatus);
-      setUser(data.user);
-    };
     fetchUserStatus();
   }, []);
 
   return (
     <Router>
       <Routes>
-        <Route path="" element={<HomePage user={user}/>} />
+        <Route path="/" element={<HomePage user={user} fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>} />
         <Route
          path="/login"
-         element={user ? <Navigate to="/" replace /> : <AuthForm setIsLoggedIn={setIsLoggedIn} setUser={setUser} />}
+         element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>}
         />
         <Route
           path="*"

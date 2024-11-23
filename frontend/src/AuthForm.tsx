@@ -1,9 +1,15 @@
-import { useState, ChangeEvent, FormEvent, SetStateAction, Dispatch } from "react";
-import axios from "axios";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import "./AuthForm.css";
-import { SERVER_BASE_URL } from "./util/constants";
+import { apiCall } from "./util/constants";
+import { useNavigate } from "react-router-dom";
 
-function AuthForm({ setIsLoggedIn, setUser }: any) {
+interface AuthFormProps {
+  fetchUserStatus: () => void,
+  isLoggedIn: boolean | null,
+}
+
+function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -12,20 +18,22 @@ function AuthForm({ setIsLoggedIn, setUser }: any) {
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate("/");
+    }
+  }, [isLoggedIn]);
+
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${SERVER_BASE_URL}/login/password`, {
+      const response = await apiCall.post(`/login/password`, {
         username,
         password,
       });
       if (response.status === 200) {
         alert("Login successful!");
-        const response = await fetch(`${SERVER_BASE_URL}/login/status`);
-        const data = await response.json();
-        setIsLoggedIn(data.loginStatus);
-        setUser(data.user);
-        console.log("logged in: " + data.user)
+        fetchUserStatus();
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -40,7 +48,7 @@ function AuthForm({ setIsLoggedIn, setUser }: any) {
       return;
     }
     try {
-      const response = await axios.post(`${SERVER_BASE_URL}/login/signup`, {
+      const response = await apiCall.post(`/login/signup`, {
         username,
         password,
         email,
@@ -49,7 +57,7 @@ function AuthForm({ setIsLoggedIn, setUser }: any) {
       });
       if (response.status === 200) {
         alert("Signup successful! Please verify your email.");
-        setIsLogin(true);
+        fetchUserStatus();
       }
     } catch (error: any) {
       console.error("Signup failed:", error);
