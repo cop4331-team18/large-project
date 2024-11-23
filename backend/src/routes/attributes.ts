@@ -11,7 +11,7 @@ export const attributesRouter: Router = express.Router();
 
 //returns attribute set
 attributesRouter.get("/", async (req: Request, res: Response) => {
-    res.status(200).json({attributes: attributes});
+    res.status(200).json({attributes: [...attributes]});
 });
 
 interface AttributeBody {
@@ -39,12 +39,10 @@ attributesRouter.post("/user/add", async (req: Request, res: Response) => {
             return;
         }
 
-        user.attributes = Array.from(new Set<string>(user.attributes).add(body.attribute));
-
         //update the user with the attribute
         const updateResult = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
             { _id: user._id },
-            { $set: { attributes: user.attributes } }
+            { $addToSet: {attributes: body.attribute}}, 
         );
 
         //return status on added attribute
@@ -82,14 +80,10 @@ attributesRouter.post("/user/delete", async (req: Request, res: Response) => {
             return;
         }
 
-        const tempSet = new Set<string>(user.attributes);
-        tempSet.delete(body.attribute);
-        user.attributes = Array.from(tempSet);
-
          //update the user with the attribute
          const updateResult = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
             { _id: user._id },
-            { $set: { attributes: user.attributes } }
+            { $pull: { attributes: body.attribute } }
         );
 
          //return status on added attribute

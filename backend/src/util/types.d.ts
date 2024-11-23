@@ -13,11 +13,8 @@ export type User = {
     attributes: string[],
 }
 
-export type UserToJSON = Omit<WithId<User>, 'password' | 'salt' | 'verificationToken'>;
-
-type MyUser = User;
-
 declare global {
+    type MyUser = User;
     namespace Express {
         interface User extends WithId<MyUser> {}
     }
