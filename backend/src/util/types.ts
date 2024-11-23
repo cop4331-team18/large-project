@@ -10,7 +10,7 @@ export type User = {
     joinedAt: Date,
     isVerified: boolean,
     verificationToken?: string | null,
-    attributes: Set<string>,
+    attributes: string[],
 }
 
 type MyUser = User;

@@ -17,6 +17,11 @@ export function returnWithOKJson(res: Response) {
 }
 
 export const attributes: Set<string> = new Set([
+    "Backend",
+    "Frontend",
+    "Junior",
+    "Mid",
+    "Senior",
     "Python",
     "C",
     "Java",
