@@ -58,6 +58,10 @@ input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focu
     box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
 }
 
+.auth-error-text {
+    color: red;
+}
+
 /* Buttons */
 button {
     width: 100%;

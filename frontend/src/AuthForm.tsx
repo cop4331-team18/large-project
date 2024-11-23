@@ -17,6 +17,7 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
   const [email, setEmail] = useState<string>("");
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
+  const [authErrorText, setAuthErrorText] = useState<string>("");
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -32,19 +33,19 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
         password,
       });
       if (response.status === 200) {
-        alert("Login successful!");
+        alert("Login successful!"); // TODO: delete after
         fetchUserStatus();
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Invalid username or password.");
+      setAuthErrorText("Invalid username or password.");
     }
   };
 
   const handleSignUp = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("Passwords don't match!");
+      setAuthErrorText("Passwords don't match!");
       return;
     }
     try {
@@ -56,12 +57,12 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
         lastName,
       });
       if (response.status === 200) {
-        alert("Signup successful! Please verify your email.");
+        alert("Signup successful! Please verify your email."); // TODO: delete after
         fetchUserStatus();
       }
     } catch (error: any) {
       console.error("Signup failed:", error);
-      alert(error.response?.data?.error || "Signup failed. Please try again.");
+      setAuthErrorText(error.response?.data?.error || "Signup failed. Please try again.");
     }
   };
 
@@ -96,9 +97,13 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
             onChange={handlePasswordChange}
           />
           <button onClick={handleLogin}>Login</button>
+          {authErrorText && <p className="auth-error-text">{authErrorText}</p>}
           <p>
             Don't have an account?{" "}
-            <a href="#" onClick={() => setIsLogin(false)}>
+            <a href="#" onClick={() => {
+              setAuthErrorText("");
+              setIsLogin(false);
+            }}>
               Create an account
             </a>
           </p>
@@ -143,9 +148,13 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
             onChange={handleConfirmPasswordChange}
           />
           <button onClick={handleSignUp}>Sign Up</button>
+          {authErrorText && <p className="auth-error-text">{authErrorText}</p>}
           <p>
             Already have an account?{" "}
-            <a href="#" onClick={() => setIsLogin(true)}>
+            <a href="#" onClick={() => {
+              setAuthErrorText("");
+              setIsLogin(true);
+            }}>
               Login here
             </a>
           </p>

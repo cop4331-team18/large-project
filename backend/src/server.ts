@@ -16,7 +16,11 @@ app.use(session({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: mongoStore
+    store: mongoStore,
+    cookie: {
+        // sameSite: 'none', // Allow for cross site in dev environments
+        // secure: true, // Need HTTPS for sameSite: 'none'
+    },
 }));
 app.use(passport.authenticate('session'));
 
