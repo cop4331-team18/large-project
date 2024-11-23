@@ -1,9 +1,9 @@
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, SetStateAction, Dispatch } from "react";
 import axios from "axios";
 import "./AuthForm.css";
 import { SERVER_BASE_URL } from "./util/constants";
 
-function AuthForm() {
+function AuthForm({ setIsLoggedIn, setUser }: any) {
   const [isLogin, setIsLogin] = useState<boolean>(true);
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -21,7 +21,11 @@ function AuthForm() {
       });
       if (response.status === 200) {
         alert("Login successful!");
-        window.location.href = "/"; // Redirect to homepage
+        const response = await fetch(`${SERVER_BASE_URL}/login/status`);
+        const data = await response.json();
+        setIsLoggedIn(data.loginStatus);
+        setUser(data.user);
+        console.log("logged in: " + data.user)
       }
     } catch (error) {
       console.error("Login failed:", error);
