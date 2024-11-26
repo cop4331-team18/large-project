@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./MatchingPage.css";
 
@@ -14,7 +14,7 @@ interface Profile {
 }
 
 const MatchingPage: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const mockProfiles: Profile[] = [
     {
@@ -37,17 +37,43 @@ const MatchingPage: React.FC = () => {
       skills: ["Unity", "Unreal Engine", "Pygame"],
       bio: "Hi, I'm Bob, a game developer looking to create a blockbuster game",
     },
+    {
+        id: "3",
+        name: "Charlie",
+        age: 28,
+        location: "Austin",
+        school: "UT Austin",
+        languages: ["Go", "Rust", "Python"],
+        skills: ["Microservices", "Kubernetes"],
+        bio: "Charlie here! Excited to collaborate on backend systems and cloud solutions.",
+      },
+      {
+        id: "4",
+        name: "Zuck",
+        age: 19,
+        location: "Cambridge",
+        school: "Harvard",
+        languages: ["C++", "PHP", "Java"],
+        skills: ["Original ideas", "Web Development"],
+        bio: "Heard about these two brothers' idea, might try to code it for fun.",
+      },
   ];
 
   const [currentIndex, setCurrentIndex] = React.useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
 
   const handleDecision = (decision: "accept" | "reject") => {
-    console.log(`Profile ${mockProfiles[currentIndex].id} was ${decision}ed.`);
-    if (currentIndex < mockProfiles.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      alert("No more profiles available.");
-    }
+    setSwipeDirection(decision === "accept" ? "right" : "left");
+
+    // Delay to load profile after swipe
+    setTimeout(() => {
+        setSwipeDirection(null);
+        if (currentIndex < mockProfiles.length - 1) {
+            setCurrentIndex(currentIndex + 1);
+        } else {
+            alert("No more profiles available.");
+        }
+    }, 500); 
   };
 
   const currentProfile = mockProfiles[currentIndex];
@@ -76,7 +102,12 @@ const MatchingPage: React.FC = () => {
       {/* Current Profile */}
       <div className="profile-container">
         {currentProfile ? (
-          <div key={currentProfile.id} className="profile-card">
+          <div 
+            key={currentProfile.id} 
+            className={`profile-card ${
+            swipeDirection === "right" ? "swipe-right" : ""
+          } ${swipeDirection === "left" ? "swipe-left" : ""}`}
+        >
             <h2 className="left-title">{currentProfile.name}, {currentProfile.age}</h2>
             <p className="left-text small-spacing">📍 {currentProfile.location}</p>
             <p className="left-text small-spacing">🏫 {currentProfile.school}</p>

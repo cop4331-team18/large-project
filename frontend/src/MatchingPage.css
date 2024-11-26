@@ -142,4 +142,37 @@ html, body {
     width: 35px;
     height: 35px;
   }
+
+  /* Swipe animations */
+.swipe-right {
+    animation: swipeRight 0.7s forwards;
+  }
+  
+  .swipe-left {
+    animation: swipeLeft 0.7s forwards;
+  }
+  
+  /* Keyframe settings */
+  @keyframes swipeRight {
+    0% {
+      transform: translateX(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%) rotate(10deg);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes swipeLeft {
+    0% {
+      transform: translateX(0), rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-100%) rotate(-10deg);
+      opacity: 0;
+    }
+  }
+  
   
