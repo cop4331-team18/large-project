@@ -73,7 +73,7 @@ const MatchingPage: React.FC = () => {
         } else {
             alert("No more profiles available.");
         }
-    }, 500); 
+    }, 650); 
   };
 
   const currentProfile = mockProfiles[currentIndex];
