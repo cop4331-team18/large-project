@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AuthForm from './AuthForm';
 import HomePage from './HomePage';
+import MatchingPage from './MatchingPage';
 import { apiCall, User } from './util/constants';
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
          path="/login"
          element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>}
         />
+        <Route path="/matching" element={<MatchingPage />} />
         <Route
           path="*"
           element={<Navigate to="/" replace />}

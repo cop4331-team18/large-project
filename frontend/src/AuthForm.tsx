@@ -21,11 +21,11 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/");
+      navigate("/matching");
     }
   }, [isLoggedIn]);
 
-  const handleLogin = async (e: FormEvent) => {
+  const handleLogin = async (e: FormEvent) => { 
     e.preventDefault();
     try {
       const response = await apiCall.post(`/login/password`, {
@@ -33,7 +33,8 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
         password,
       });
       if (response.status === 200) {
-        alert("Login successful!"); // TODO: delete after
+        // alert("Login successful!"); // TODO: delete after
+        navigate("/matching");
         fetchUserStatus();
       }
     } catch (error) {
