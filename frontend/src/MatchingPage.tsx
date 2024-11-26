@@ -14,7 +14,7 @@ interface Profile {
 }
 
 const MatchingPage: React.FC = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const mockProfiles: Profile[] = [
     {
