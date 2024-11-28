@@ -1,24 +1,17 @@
 //adding attributes updated
 
-import express, { Request, Response } from 'express';
-import { attributes, returnWithErrorJson, returnWithOKJson, USER_COLLECTION_NAME } from "../util/constants";
-import { PORT } from "../util/constants";
+import express, { Request, Response, Router } from 'express';
+import { attributes, returnWithErrorJson, USER_COLLECTION_NAME } from "../util/constants";
 import { getReqUser } from './login';
-import { Db, WithId } from 'mongodb';
+import { WithId } from 'mongodb';
 import { User } from '../util/types';
 import { db } from '../util/db';
 
-const attr = express.Router();
-const port = PORT;
-attr.use(express.json());
-
-interface userAttributes {
-    username: string,
-}
+export const attributesRouter: Router = express.Router();
 
 //returns attribute set
-attr.get("/attributes", async (req: Request, res: Response) => {
-    res.status(200).json({attributes: attributes});
+attributesRouter.get("/", async (req: Request, res: Response) => {
+    res.status(200).json({attributes: [...attributes]});
 });
 
 interface AttributeBody {
@@ -26,7 +19,7 @@ interface AttributeBody {
 };
 
 //adding the attribute to the user
-attr.post("/attributes/user/add", async (req: Request, res: Response) => {
+attributesRouter.post("/user/add", async (req: Request, res: Response) => {
     
     try{
         const  body: AttributeBody = req.body;
@@ -39,16 +32,17 @@ attr.post("/attributes/user/add", async (req: Request, res: Response) => {
 
         //check if user has verified email
         if(!user.isVerified) {
-            res.status(500).json({ message: "User email is not verified" });
+            returnWithErrorJson(res, "User email is not verified");
+            return;
+        } else if (!attributes.has(body.attribute)) {
+            returnWithErrorJson(res, "Attribute does not match any available attributes.");
             return;
         }
-
-        user.attributes.add(body.attribute);
 
         //update the user with the attribute
         const updateResult = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
             { _id: user._id },
-            { $set: { attributes: user.attributes } }
+            { $addToSet: {attributes: body.attribute}}, 
         );
 
         //return status on added attribute
@@ -67,7 +61,7 @@ attr.post("/attributes/user/add", async (req: Request, res: Response) => {
     }
 });
 
-attr.post("/attributes/user/delete", async (req: Request, res: Response) => {
+attributesRouter.post("/user/delete", async (req: Request, res: Response) => {
     try{
         const body: AttributeBody = req.body;
         const user: WithId<User> | null = await getReqUser(req);
@@ -79,16 +73,17 @@ attr.post("/attributes/user/delete", async (req: Request, res: Response) => {
 
         //check if user has verified email
         if(!user.isVerified) {
-            res.status(500).json({ message: "User email is not verified" });
+             returnWithErrorJson(res, "User email is not verified" );
+            return;
+        } else if (!attributes.has(body.attribute)) {
+            returnWithErrorJson(res, "Attribute does not match any available attributes.");
             return;
         }
-
-        user.attributes.delete(body.attribute);
 
          //update the user with the attribute
          const updateResult = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
             { _id: user._id },
-            { $set: { attributes: user.attributes } }
+            { $pull: { attributes: body.attribute } }
         );
 
          //return status on added attribute
@@ -107,9 +102,5 @@ attr.post("/attributes/user/delete", async (req: Request, res: Response) => {
     }
 });
 
-export default attr;
-
-
-
-
+export default attributesRouter;
 

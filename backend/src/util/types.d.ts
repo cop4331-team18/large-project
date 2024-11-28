@@ -10,12 +10,11 @@ export type User = {
     joinedAt: Date,
     isVerified: boolean,
     verificationToken?: string | null,
-    attributes: Set<string>,
+    attributes: string[],
 }
 
-type MyUser = User;
-
 declare global {
+    type MyUser = User;
     namespace Express {
         interface User extends WithId<MyUser> {}
     }

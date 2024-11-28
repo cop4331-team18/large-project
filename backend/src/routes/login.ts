@@ -4,7 +4,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import { db } from '../util/db';
 import { returnWithErrorJson, returnWithOKJson, USER_COLLECTION_NAME } from '../util/constants';
 import { User } from '../util/types';
-import { InsertOneResult, ObjectId, WithId } from 'mongodb';
+import { InsertOneResult, MongoServerError, ObjectId, WithId } from 'mongodb';
 import crypto from 'crypto';
 import nodemailer from "nodemailer";
 
@@ -31,12 +31,6 @@ passport.use(new LocalStrategy(async (username: string, password: string, done) 
             message: `User ${username} does not exist.`,
         });
     }
-    console.log(user)
-    // if (!user.isVerified) {
-    //     return done(null, false, {
-    //         message: `Verify your email before continuing.`,
-    //     });
-    // }
     crypto.pbkdf2(password, user.salt, HASH_ITERATIONS, HASH_KEYLEN, HASH_METHOD, (err: Error | null, hashedPassword: Buffer) => {
         if (err) {
             return done(err);
@@ -67,7 +61,7 @@ loginRouter.post("/password", passport.authenticate('local'), async (req: Reques
 });
 
 loginRouter.get("/status", async (req: Request, res: Response) => {
-    const user: any = await getReqUser(req) as any;
+    const user: any = await getReqUser(req);
     if (user) {
         delete user.password;
         delete user.salt;
@@ -144,23 +138,31 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
             returnWithErrorJson(res, `Failed to send verification email:\n${error}`);
             return;
         }
-        const result: InsertOneResult<User> = await db.collection<User>(USER_COLLECTION_NAME).insertOne({
-            username: body.username,
-            password: hashedPassword.toString('hex'),
-            email : body.email,
-            firstName: body.firstName,
-            lastName: body.lastName,
-            salt: salt,
-            joinedAt: new Date(),
-            isVerified: false,
-            verificationToken: verificationToken,
-            attributes: new Set<string>(),
-        });
-        const user: WithId<User> = (await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
-        req.login(user, () => {
-            returnWithOKJson(res);
-            return;
-        })
+        try {
+            const result: InsertOneResult<User> = await db.collection<User>(USER_COLLECTION_NAME).insertOne({
+                username: body.username,
+                password: hashedPassword.toString('hex'),
+                email : body.email,
+                firstName: body.firstName,
+                lastName: body.lastName,
+                salt: salt,
+                joinedAt: new Date(),
+                isVerified: false,
+                verificationToken: verificationToken,
+                attributes: [],
+            });
+            const user: WithId<User> = (await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
+            req.login(user, () => {
+                returnWithOKJson(res);
+                return;
+            })
+        } catch (error) {
+            if (error instanceof MongoServerError) {
+                returnWithErrorJson(res, `Failed to create user: ${error.message}`);
+            } else {
+                returnWithErrorJson(res, `Failed to create user: ${err}`)
+            }
+        }
     });
 });
 

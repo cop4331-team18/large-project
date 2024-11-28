@@ -7,6 +7,7 @@ export const MONGO_CONNECTION_STRING: string = process.env.MONGO_CONNECTION_STRI
 export const MONGO_DB_NAME: string = process.env.MONGO_DB_NAME!;
 export const USER_COLLECTION_NAME: string = "Users";
 export const SESSION_SECRET: string = process.env.SESSION_SECRET!;
+export const ALLOWED_ORIGINS: string[] = process.env.ALLOWED_ORIGINS!.split(", ");
 
 export function returnWithErrorJson(res: Response, error: string) {
     return res.status(406).json({error: error});
@@ -17,6 +18,11 @@ export function returnWithOKJson(res: Response) {
 }
 
 export const attributes: Set<string> = new Set([
+    "Backend",
+    "Frontend",
+    "Junior",
+    "Mid",
+    "Senior",
     "Python",
     "C",
     "Java",
