@@ -13,6 +13,13 @@ export type User = {
     attributes: string[],
 }
 
+export type Project = {
+    name: string,
+    attributes: string[],
+    description: string,
+    createdBy: ObjectId,
+};
+
 declare global {
     type MyUser = User;
     namespace Express {
