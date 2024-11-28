@@ -10,14 +10,6 @@ import { MongoClient } from "mongodb";
 
 export const projectRouter: Router = express.Router();
 
-interface ProjectBody {
-    name: string;
-    attributes: string[];
-    description: string;
-};
-
-
-
 //will add a project to a collection and then add that projectId to the user
 projectRouter.post("/project/add", async  (req: Request, res: Response) => {
     const user: WithId<User> | null = await getReqUser(req);
@@ -34,7 +26,7 @@ projectRouter.post("/project/add", async  (req: Request, res: Response) => {
     }
 
     //creates instance of an empty project
-    const emptyProject: ProjectBody = {
+    const emptyProject = {
         name: "",
         attributes: [],
         description: ""
@@ -103,5 +95,9 @@ projectRouter.post("/project/delete/:id", async (req: Request, res: Response) =>
         returnWithErrorJson(res, "Error deleting project.")
     }
 });
+
+//create function that updates a project (add/change attributes, add/change name, add/change desc)
+
+//either in this file or another (preferrably another), allow users to request ot join and or delete their requests to join a project
 
 export default projectRouter;

@@ -11,6 +11,7 @@ export type User = {
     isVerified: boolean,
     verificationToken?: string | null,
     attributes: string[],
+    projects: ObjectId[],
 }
 
 export type Project = {
