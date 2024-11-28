@@ -7,6 +7,7 @@ import session from 'express-session';
 import { mongoStore } from './util/db';
 import passport from 'passport';
 import attributesRouter from './routes/attributes';
+import projectRouter from './routes/projects';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(passport.authenticate('session'));
 
 app.use("/login", loginRouter);
 app.use("/attributes", attributesRouter);
+app.use("/projects", projectRouter);
 
 app.get("/", async (req: Request, res: Response) => {
     res.status(200).send("Hello!");
