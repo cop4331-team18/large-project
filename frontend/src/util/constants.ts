@@ -1,8 +1,7 @@
 import axios from "axios";
 import { User as BackendUser } from "../../../backend/src/util/types";
 
-// export const SERVER_BASE_URL: string = "http://localhost:5000"
-export const SERVER_BASE_URL: string = "http://54.210.31.202/api"
+export const SERVER_BASE_URL: string = (import.meta.env.PROD) ? "/api" : `${window.location.protocol}//${window.location.hostname}:5000`;
 
 export const apiCall = axios.create({
     baseURL: SERVER_BASE_URL,

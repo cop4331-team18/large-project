@@ -11,7 +11,6 @@ import { getReqUser } from "./login";
 import { WithId, ObjectId } from "mongodb";
 import { User, Project } from "../util/types";
 import { db } from "../util/db";
-import { MongoClient } from "mongodb";
 
 export const projectRouter: Router = express.Router();
 interface UpdateProject {
@@ -69,21 +68,14 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
     return;
   }
 
-  //creates instance of an empty project
-  const emptyProject = {
-    name: "",
-    attributes: [],
-    description: "",
-  };
-
   try {
     //adds new blank project to the project database
     const insertResult = await db
       .collection<Project>(PROJECT_COLLECTION_NAME)
       .insertOne({
-        name: emptyProject.name,
-        attributes: emptyProject.attributes,
-        description: emptyProject.description,
+        name: "New Project",
+        attributes: [],
+        description: "New Project description",
         createdBy: user._id,
       });
 
@@ -123,7 +115,7 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
 
   try {
     //delete the project from the database
-    const deleteResult = await db.collection<Project>(PROJECT_COLLECTION_NAME).deleteOne({
+    await db.collection<Project>(PROJECT_COLLECTION_NAME).deleteOne({
         _id: new ObjectId(projectId),
         createdBy: user._id,
       });
@@ -150,7 +142,7 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
   const user: WithId<User> | null = await getReqUser(req);
   const body: UpdateProject = req.body;
 
-  if (!user || !body) {
+  if (!user || !body.id || !body.description || !body.name) {
     returnWithErrorJson(res, "User and update fields are required.");
     return;
   }
@@ -162,13 +154,13 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
   }
 
   try {
-    //body: name, attributes, description
-    //.updateOne()
-    //run with body
-    const UpdateProject = await db
+    //body: name, description
+    await db
       .collection<Project>(PROJECT_COLLECTION_NAME)
-      .updateOne(
-        { _id: new ObjectId(body.id) },
+      .updateOne({ 
+          _id: new ObjectId(body.id),
+          createdBy: user._id,
+        },
         { $set: { name: body.name, description: body.description } }
       );
 
@@ -206,8 +198,10 @@ projectRouter.post("/attribute/add", async (req: Request, res: Response) => {
     //update the user with the attribute
     const updateResult = await db
       .collection<Project>(PROJECT_COLLECTION_NAME)
-      .updateOne(
-        { _id: new ObjectId(body.id) },
+      .updateOne({ 
+          _id: new ObjectId(body.id),
+          createdBy: user._id,
+        },
         { $addToSet: { attributes: body.attribute } }
       );
 
@@ -245,8 +239,12 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
       }
   
       //update the user with the attribute
-      const updateResult = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
-          { _id: new ObjectId(body.id)},
+      const updateResult = await db
+        .collection<Project>(PROJECT_COLLECTION_NAME)
+        .updateOne({ 
+            _id: new ObjectId(body.id),
+            createdBy: user._id,
+          },
           { $pull: { attributes: body.attribute } }
         );
   

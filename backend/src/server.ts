@@ -18,10 +18,6 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: mongoStore,
-    cookie: {
-        // sameSite: 'none', // Allow for cross site in dev environments
-        // secure: true, // Need HTTPS for sameSite: 'none'
-    },
 }));
 app.use(passport.authenticate('session'));
 
