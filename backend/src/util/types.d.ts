@@ -1,4 +1,4 @@
-import { WithId } from "mongodb";
+import { WithId, ObjectId } from "mongodb";
 
 export type User = {
     username: string,
