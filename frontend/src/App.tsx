@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import AuthForm from './AuthForm';
 import HomePage from './HomePage';
 import MatchingPage from './MatchingPage';
+import ChatPage from './chat';
 import { apiCall, User } from './util/constants';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
   return (
     <Router>
       <Routes>
+
         <Route path="/" element={<HomePage user={user} fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>} />
         <Route
          path="/login"
@@ -34,6 +36,8 @@ function App() {
           path="*"
           element={<Navigate to="/" replace />}
         />
+        <Route path="/chat" element={<ChatPage />} />
+        
       </Routes>
     </Router>
   );

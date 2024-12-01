@@ -1,0 +1,36 @@
+/* General Styles */
+.chat-page {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+  
+  /* Tabs Styles */
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  
+  .tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    color: #333;
+    border-bottom: 2px solid transparent;
+  }
+  
+  .tab.active {
+    border-bottom: 2px solid #007BFF;
+    font-weight: bold;
+  }
+  
+  .tab:hover {
+    color: #007BFF;
+  }
+  
+  /* Chat Container Styles */
+  .chat-container {
+    border: 1px solid #ddd;
+    padding: 20px;
+    min-height: 400px;
+  }
+  

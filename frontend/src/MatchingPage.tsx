@@ -82,11 +82,8 @@ const MatchingPage: React.FC = () => {
     <div className="matching-page">
       {/* Tabs */}
       <div className="tabs">
-        <div
-          className="tab"
-          onClick={() => navigate("/")}
-        >
-          <span>Updates</span>
+          <div className="tab" onClick={() => navigate("/chat")}>
+          <span>Chat</span>
         </div>
         <div className="tab active">
           <span>Matching</span>
