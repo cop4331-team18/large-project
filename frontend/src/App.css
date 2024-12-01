@@ -40,3 +40,36 @@
 .read-the-docs {
   color: #888;
 }
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+.tab {
+  margin: 0 15px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 10px 15px;
+}
+
+.tab.active {
+  color: #0078d7;
+  border-bottom: 2px solid #0078d7;
+}
+
+.tab.tab {
+  color: black;
+}
+
+.tab-icon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 5px;
+}
+
+.tab:hover {
+  color: #007BFF;
+}

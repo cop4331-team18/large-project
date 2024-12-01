@@ -6,6 +6,7 @@ import MatchingPage from './MatchingPage';
 import ChatPage from './Chat';
 import { apiCall, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
+import "./App.css"
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
