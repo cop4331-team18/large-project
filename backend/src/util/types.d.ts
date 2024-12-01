@@ -23,6 +23,18 @@ export type Project = {
     createdBy: ObjectId,
 };
 
+export type ChatMessageInput = {
+    message: string,
+    project: string,
+}
+
+export type ChatMessage = {
+    message: string,
+    project: ObjectId,
+    sender: ObjectId,
+    createdAt: Date,
+}
+
 declare global {
     type MyUser = User;
     namespace Express {

@@ -117,7 +117,6 @@ h1 {
 /* Buttons */
 button {
   padding: 0.75rem;
-  margin-top: 1rem;
   background-color: #f2b0ff;
   color: white;
   border: none;
@@ -134,4 +133,8 @@ button:hover {
 button:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(73, 75, 120, 0.3);
+}
+
+input {
+  color-scheme: light-only;
 }
