@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "./MatchingPage.css";
+import Tabs from "./components/Tabs";
 
 interface Profile {
   id: string;
@@ -13,8 +13,11 @@ interface Profile {
   bio: string;
 }
 
-const MatchingPage: React.FC = () => {
-  const navigate = useNavigate();
+interface MatchingPageProps {
+  chatNotifications: number;
+}
+
+const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: MatchingPageProps) => {
 
   const mockProfiles: Profile[] = [
     {
@@ -80,21 +83,7 @@ const MatchingPage: React.FC = () => {
 
   return (
     <div className="matching-page">
-      {/* Tabs */}
-      <div className="tabs">
-          <div className="tab" onClick={() => navigate("/chat")}>
-          <span>Chat</span>
-        </div>
-        <div className="tab active">
-          <span>Matching</span>
-        </div>
-        <div
-          className="tab"
-          onClick={() => navigate("/settings")}
-        >
-          <span>Settings</span>
-        </div>
-      </div>
+      <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
       {/* Current Profile */}
       <div className="profile-container">

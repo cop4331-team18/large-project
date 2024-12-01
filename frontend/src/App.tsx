@@ -13,6 +13,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [chatNotifications, setChatNotifications] = useState<number>(0);
 
   const refreshSocket = (loginStatus: boolean) => {
     if (loginStatus) {
@@ -56,19 +57,18 @@ function App() {
   return (
     <Router>
       <Routes>
-
         <Route path="/" element={<HomePage user={user} fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>} />
         <Route
-         path="/login"
-         element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>}
+        path="/login"
+        element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>}
         />
-        <Route path="/matching" element={<MatchingPage />} />
+        <Route path="/matching" element={<MatchingPage chatNotifications={chatNotifications}/>} />
         <Route
           path="*"
           element={<Navigate to="/" replace />}
         />
-        <Route path="/chat" element={<ChatPage socket={socket}/>} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/chat" element={<ChatPage socket={socket} chatNotifications={chatNotifications} setChatNotifications={setChatNotifications}/>} />
+        <Route path="/settings" element={<SettingsPage chatNotifications={chatNotifications}/>} />
       </Routes>
     </Router>
   );

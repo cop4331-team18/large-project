@@ -1,15 +1,16 @@
-import { useNavigate } from "react-router-dom";
 import "./Chat.css";
 import { Socket } from "socket.io-client";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ChatMessage, ChatMessageInput } from "./util/constants";
+import Tabs from "./components/Tabs";
 
 interface ChatProps {
-  socket: Socket | null,
+  socket: Socket | null;
+  chatNotifications: number;
+  setChatNotifications: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const ChatPage = ({socket}: ChatProps) => {
-  const navigate = useNavigate();
+const ChatPage = ({socket, chatNotifications, setChatNotifications}: ChatProps) => {
   const [messageInput, setMessageInput] = useState<string>('');
 
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -18,9 +19,12 @@ const ChatPage = ({socket}: ChatProps) => {
 
   useEffect(() => {
     if (socket) {
-        socket.on("messasge-res", (data: ChatMessage) => {
-          alert(`RECIEVED MESSAGE: ${JSON.stringify(data)}`);
+      socket.on("messasge-res", (data: ChatMessage) => {
+        alert(`RECIEVED MESSAGE: ${JSON.stringify(data)}`);
+        setChatNotifications(prev => {
+          return prev+1;
         });
+      });
     }
   }, [socket]);
 
@@ -38,17 +42,7 @@ const ChatPage = ({socket}: ChatProps) => {
   return (
     <div className="chat-page">
       {/* Tabs */}
-      <div className="tabs">
-        <div className="tab active">
-          <span>Chat</span>
-        </div>
-        <div className="tab" onClick={() => navigate("/matching")}>
-          <span>Matching</span>
-        </div>
-        <div className="tab" onClick={() => navigate("/settings")}>
-          <span>Settings</span>
-        </div>
-      </div>
+      <Tabs currentTab="chat" chatNotifications={chatNotifications}/>
 
       {/* Chat Content */}
       <div className="chat-container">
@@ -59,10 +53,10 @@ const ChatPage = ({socket}: ChatProps) => {
           <div className="message-container">
 
           </div>
-          <div className="input-container">
+          <form className="input-container" onSubmit={sendChatMessage}>
             <input type="text" placeholder="Send a message" value={messageInput} onChange={handleMessageInputChange}></input>
             <button onClick={sendChatMessage}>➣</button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
