@@ -1,10 +1,19 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
-import "./chat.css";
+import "./Chat.css";
+import { Socket } from "socket.io-client";
+import { useEffect } from "react";
 
-const ChatPage: React.FC = () => {
+interface ChatProps {
+  socket: Socket | null,
+}
+
+const ChatPage = ({socket}: ChatProps) => {
   const navigate = useNavigate();
-
+  useEffect(() => {
+    if (socket) {
+      console.log(socket)
+    }
+  }, [socket])
   return (
     <div className="chat-page">
       {/* Tabs */}

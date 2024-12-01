@@ -220,46 +220,46 @@ projectRouter.post("/attribute/add", async (req: Request, res: Response) => {
 });
 
 projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
-    try {
-      const body: ProjectAttribute = req.body;
-      const user: WithId<User> | null = await getReqUser(req);
-  
-      if (!user || !body.attribute || !body.id) {
-        returnWithErrorJson(res, "User, attribute, and project id are required");
-        return;
-      }
-  
-      //check if user has verified email
-      if (!user.isVerified) {
-        returnWithErrorJson(res, "User email is not verified");
-        return;
-      } else if (!attributes.has(body.attribute)) {
-        returnWithErrorJson(res,"Attribute does not match any available attributes.");
-        return;
-      }
-  
-      //update the user with the attribute
-      const updateResult = await db
-        .collection<Project>(PROJECT_COLLECTION_NAME)
-        .updateOne({ 
-            _id: new ObjectId(body.id),
-            createdBy: user._id,
-          },
-          { $pull: { attributes: body.attribute } }
-        );
-  
-      //return status on added attribute
-      if (updateResult.modifiedCount === 1) {
-        res.status(200).json({ message: "Attribute deleted succesfully." });
-        return;
-      } else {
-        returnWithErrorJson(res, "Attribute was not deleted successfully.");
-        return;
-      }
-    } catch (error) {
-      console.error("Error deleting attribute:", error);
-      returnWithErrorJson(res, "Attribute was not successfully deleted.");
+  try {
+    const body: ProjectAttribute = req.body;
+    const user: WithId<User> | null = await getReqUser(req);
+
+    if (!user || !body.attribute || !body.id) {
+      returnWithErrorJson(res, "User, attribute, and project id are required");
+      return;
     }
-  });
+
+    //check if user has verified email
+    if (!user.isVerified) {
+      returnWithErrorJson(res, "User email is not verified");
+      return;
+    } else if (!attributes.has(body.attribute)) {
+      returnWithErrorJson(res,"Attribute does not match any available attributes.");
+      return;
+    }
+
+    //update the user with the attribute
+    const updateResult = await db
+      .collection<Project>(PROJECT_COLLECTION_NAME)
+      .updateOne({ 
+          _id: new ObjectId(body.id),
+          createdBy: user._id,
+        },
+        { $pull: { attributes: body.attribute } }
+      );
+
+    //return status on added attribute
+    if (updateResult.modifiedCount === 1) {
+      res.status(200).json({ message: "Attribute deleted succesfully." });
+      return;
+    } else {
+      returnWithErrorJson(res, "Attribute was not deleted successfully.");
+      return;
+    }
+  } catch (error) {
+    console.error("Error deleting attribute:", error);
+    returnWithErrorJson(res, "Attribute was not successfully deleted.");
+  }
+});
 
 export default projectRouter;

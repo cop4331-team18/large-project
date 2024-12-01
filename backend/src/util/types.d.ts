@@ -1,4 +1,6 @@
 import { WithId, ObjectId } from "mongodb";
+import type { IncomingMessage } from 'node:http';
+import type { Socket } from 'socket.io';
 
 export type User = {
     username: string,
@@ -26,4 +28,12 @@ declare global {
     namespace Express {
         interface User extends WithId<MyUser> {}
     }
+}
+
+interface IncomingMessageWithUser extends IncomingMessage {
+    user?: Express.User | null
+}
+
+export interface SocketWithUser extends Socket {
+    request: IncomingMessageWithUser
 }
