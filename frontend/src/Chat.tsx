@@ -24,7 +24,7 @@ const ChatPage = ({socket}: ChatProps) => {
         <div className="tab" onClick={() => navigate("/matching")}>
           <span>Matching</span>
         </div>
-        <div className="tab" onClick={() => navigate("/")}>
+        <div className="tab" onClick={() => navigate("/settings")}>
           <span>Settings</span>
         </div>
       </div>

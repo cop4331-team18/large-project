@@ -90,7 +90,7 @@ const MatchingPage: React.FC = () => {
         </div>
         <div
           className="tab"
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/settings")}
         >
           <span>Settings</span>
         </div>

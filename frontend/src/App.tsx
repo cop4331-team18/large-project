@@ -4,6 +4,7 @@ import AuthForm from './AuthForm';
 import HomePage from './HomePage';
 import MatchingPage from './MatchingPage';
 import ChatPage from './Chat';
+import SettingsPage from './Settings';
 import { apiCall, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
 import "./App.css"
@@ -67,7 +68,7 @@ function App() {
           element={<Navigate to="/" replace />}
         />
         <Route path="/chat" element={<ChatPage socket={socket}/>} />
-        
+        <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </Router>
   );
