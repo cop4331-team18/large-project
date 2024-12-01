@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { FormEvent, useEffect } from 'react';
 import { apiCall, User } from './util/constants';
+import "./HomePage.css"
 
 
 interface HomePageProps {
@@ -31,17 +32,15 @@ const HomePage = ({ user, isLoggedIn, fetchUserStatus }: HomePageProps) => {
     }
 
     return (
-        <div className="main">
-            <div className="home-container">
-                <h1>Welcome, {user && user.username}!</h1>
-                <p>
-                    Verification Status: {user && user.isVerified ? "YES" : "NO"}
-                </p>
-                <p>
-                    We're glad to have you here. Enjoy exploring the application!
-                </p>
-                <button onClick={handleLogout}>Log out temp</button>
-            </div>
+        <div className="home-page">
+            <h1>Welcome, {user && user.username}!</h1>
+            <p>
+                Verification Status: {user && user.isVerified ? "YES" : "NO"}
+            </p>
+            <p>
+                We're glad to have you here. Enjoy exploring the application!
+            </p>
+            <button onClick={handleLogout}>Log out temp</button>
         </div>
     );
 };

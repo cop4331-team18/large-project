@@ -1,8 +1,6 @@
-/* General Styles */
 .chat-page {
     font-family: Arial, sans-serif;
     padding: 20px;
-    min-height: 100vh;
     width: 100%;
   
   /* Chat Container Styles */
@@ -10,5 +8,15 @@
     border: 1px solid #ddd;
     padding: 20px;
     min-height: 400px;
+    margin-top: 10px;
+    display: flex;
+  }
+  
+  .left-panel {
+    width: 100%;
+  }
+
+  .right-panel {
+    width: 100%;
   }
 }

@@ -84,7 +84,7 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
     setLastName(e.target.value);
 
   return (
-    <div className="main">
+    <div className="auth-page">
       {isLogin ? (
         <div className="login-form">
           <h1>Login</h1>

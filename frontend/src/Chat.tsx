@@ -31,7 +31,12 @@ const ChatPage = ({socket}: ChatProps) => {
 
       {/* Chat Content */}
       <div className="chat-container">
-        <p>This is the Chat page put the shit here and stuff</p>
+        <div className="left-panel">
+
+        </div>
+        <div className="right-panel">
+
+        </div>
       </div>
     </div>
   );
