@@ -1,23 +1,6 @@
+/* Stuff for settings-page only */
 .settings-page {
     padding: 20px;
-  }
-  
-  .tabs {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-  }
-  
-  .tab {
-    cursor: pointer;
-    /* background-color: #f4f4f4; */
-    border-radius: 5px;
-    font-weight: bold;
-  }
-  
-  .tab.active {
-    color: white;
-  }
   
   .settings-container {
     max-width: 600px;
@@ -67,4 +50,4 @@
   .save-button:hover {
     background-color: #f385ff;
   }
-  
+}
