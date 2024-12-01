@@ -45,8 +45,8 @@ io.engine.use(passport.authenticate('session'));
 io.on("connection", (socket: SocketWithUser) => {
     const user: Express.User | undefined | null = socket.request.user;
     if (user) {
-        socket.join(`user:${user.username}`);
-        io.to(`user:${user.username}`).emit("connection", {message: "Listening to the server!"});
+        socket.join(`user:${user._id}`);
+        io.to(`user:${user._id}`).emit("connection", {message: "Listening to the server!"});
     }
 });
 
