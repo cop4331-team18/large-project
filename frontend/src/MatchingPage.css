@@ -1,121 +1,198 @@
+/* Matching Page */
 .matching-page {
-    font-family: Arial, sans-serif;
-    width: 50%;
-    padding: 20px;
-    text-align: center;
-  
-  .profile-container {
-    margin-top: 10px;
-  }
-  
-  .profile-card {
-    margin: 0 auto 20px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .profile-card h2 {
-    margin: 0;
-    color: black;
-  }
-
-  .profile-card h3 {
-    margin: 10px 0 0px;
-    color: black;
-    text-align: left;
-  }
-
-  .small-spacing {
-    margin: 0 0 0;
-  }
-
-  .large-spacing {
-    margin: 15px 0;
-  }
-
-  .bio {
-    text-align: left;
-    margin-top: 0;
-  }
-
-  .left-title {
-    text-align: left;
-    font-size: 1.8rem;
-    font-weight: bold;
-  }
-
-  .left-text {
-    text-align: left;
-    font-size: 0.8rem;
-  }
-
-  .center-field {
-    text-align: center;
-    font-size: 1rem;
-    margin: 5px 0;
-  }
-  
-  .action-buttons {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    padding: 20px 0;
-    margin-top: auto;
-  }
-  
-  .reject-btn, .accept-btn {
-    width: 70px; /* Slightly larger buttons */
-    height: 70px;
-    border-radius: 50%; /* Circular shape */
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Decline button with red background */
-  .reject-btn {
-    background-color: #ff4d4f; /* Red color */
-  }
-  
-  .reject-btn:hover {
-    transform: scale(1.1); /* Slightly enlarge on hover */
-    box-shadow: 0 6px 12px rgba(255, 77, 79, 0.4); /* Add a glow */
-  }
-  
-  /* Accept button with green background */
-  .accept-btn {
-    background-color: #4caf50; /* Green color */
-  }
-  
-  .accept-btn:hover {
-    transform: scale(1.1); /* Slightly enlarge on hover */
-    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4); /* Add a glow */
-  }
-  
-  /* Icons inside buttons */
-  .action-buttons img {
-    width: 35px;
-    height: 35px;
-  }
-
-  /* Swipe animations */
-.swipe-right {
-    animation: swipeRight 0.7s ease-out forwards;
-  }
-  
-  .swipe-left {
-    animation: swipeLeft 0.7s ease-out forwards;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh; /* Full viewport height */
+  background-color: #f8f9fa; /* Light background color */
 }
+
+/* Profile Card (as Main Container) */
+.profile-card {
+  width: 100%;
+  height: 65%;
+  max-width: 600px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 0 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 10px;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+
+/* Card Content */
+.card-content {
+  flex-grow: 1; 
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+/* Long Text Wrapping */
+.project-name, .project-description, .bio {
+  max-width: 100%;
+  word-wrap: break-word; 
+  overflow-wrap: break-word; 
+  text-overflow: ellipsis;
+  white-space: normal; 
+  text-align: left;
+}
+
+/* Attributes Section */
+.attributes {
+  display: flex;
+  flex-wrap: wrap; /* Allow tags to wrap onto a new line if they don't fit */
+  gap: 10px; /* Space between tags */
+  margin-bottom: 20px; /* Space below attributes */
+}
+
+.attribute-tag {
+  display: inline-block;
+  padding: 8px 15px;
+  background-color: #f7d1ff; /* Light blue background */
+  color: #444242; /* Blue text */
+  font-size: 0.9rem;
+  border-radius: 20px; /* Rounded edges for bubble look */
+  border: 1px solid #eaacf7; /* Subtle border */
+  white-space: nowrap; /* Prevent the text from breaking */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+}
+
+/* Section Headers (e.g., Projects, About Me) */
+.section-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px; /* Space between icon and text */
+}
+
+.section-header-icon {
+  width: 20px;
+  height: 20px;
+  display: inline-block;
+}
+
+/* Visual Divider for Sections */
+.section-divider {
+  height: 1px;
+  background-color: #d9d9d9;
+  margin: 15px 0; /* Space around divider */
+  border: none;
+  opacity: 0.8; /* Slight transparency for subtle look */
+  width: 100%;
+}
+
+/* Title (Profile Name) */
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-align: center;
+}
+  
+h2 {
+  color: black;
+}
+
+.profile-card h3 {
+  color: black;
+  text-align: left;
+}
+
+/* Attributes */
+.attributes {
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Projects Section */
+.projects {
+  margin-top: 10px;
+}
+
+.project {
+  margin-bottom: 15px;
+  padding-left: 20px;
+}
+
+.project-name {
+  font-size: 1rem;
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+.project-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 5px;
+  margin-bottom: 30px; 
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  padding: 20px 0;
+  margin-top: auto;
+}
+
+.reject-btn, .accept-btn {
+  width: 70px; 
+  height: 70px;
+  border-radius: 50%; /* Circular shape */
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.reject-btn {
+  background-color: #ff4d4f;
+}
+
+.reject-btn:hover {
+  transform: scale(1.1); 
+  box-shadow: 0 6px 12px rgba(255, 77, 79, 0.4); 
+}
+
+.accept-btn {
+  background-color: #4caf50;
+}
+
+.accept-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+}
+
+/* Icons inside buttons */
+.action-buttons img {
+  width: 35px;
+  height: 35px;
+}
+
+/* Swipe animations */
+.swipe-right {
+  animation: swipeRight 0.7s ease-out forwards;
+}
+
+.swipe-left {
+  animation: swipeLeft 0.7s ease-out forwards;
+}
+
 /* Keyframe settings */
 @keyframes swipeRight {
   0% {
@@ -137,4 +214,26 @@
     transform: translateX(-100%) rotate(-10deg);
     opacity: 0;
   }
+}
+
+/* Message when no profiles are left */
+.no-profiles-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.no-profiles-message h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.no-profiles-message p {
+  font-size: 1rem;
+  color: #666;
 }

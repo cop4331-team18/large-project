@@ -2,15 +2,16 @@ import React, { useState } from "react";
 import "./MatchingPage.css";
 import Tabs from "./components/Tabs";
 
+interface Project {
+  name: string;
+  description: string;
+}
+
 interface Profile {
   id: string;
-  name: string;
-  age: number;
-  location: string;
-  school: string;
-  languages: string[];
-  skills: string[];
-  bio: string;
+  firstName: string;
+  attributes: string[];
+  projects: Project[];
 }
 
 interface MatchingPageProps {
@@ -22,44 +23,49 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
   const mockProfiles: Profile[] = [
     {
       id: "1",
-      name: "Alice",
-      age: 22,
-      location: "New York",
-      school: "NYU",
-      languages: ["JavaScript", "Python", "TypeScript"],
-      skills: ["React", "Node.js"],
-      bio: "I'm Alice, a full-stack developer looking to create a MERN stack application",
+      firstName: "Alice",
+      attributes: ["JavaScript", "Python", "React", "Node.js"],
+      projects: [
+        {
+          name: "MERN Stack App",
+          description: "An application that uses MongoDB, Express, React, and Node.js",
+        },
+        {
+          name: "School Club Portfolio",
+          description: "Portfolio for a UCF club that displays all achievements and updates"
+        },
+      ],
     },
     {
       id: "2",
-      name: "Bob",
-      age: 25,
-      location: "San Francisco",
-      school: "Stanford",
-      languages: ["C#", "C++", "Python"],
-      skills: ["Unity", "Unreal Engine", "Pygame"],
-      bio: "Hi, I'm Bob, a game developer looking to create a blockbuster game",
+      firstName: "Bob",
+      attributes: ["Unity", "C++", "Game Design"],
+      projects: [
+        {
+          name: "Indie Game",
+          description: "A 2D platformer built with Unity targeting desktop platforms.",
+        },
+      ],
     },
     {
-        id: "3",
-        name: "Charlie",
-        age: 28,
-        location: "Austin",
-        school: "UT Austin",
-        languages: ["Go", "Rust", "Python"],
-        skills: ["Microservices", "Kubernetes"],
-        bio: "Charlie here! Excited to collaborate on backend systems and cloud solutions.",
-      },
-      {
-        id: "4",
-        name: "Zuck",
-        age: 19,
-        location: "Cambridge",
-        school: "Harvard",
-        languages: ["C++", "PHP", "Java"],
-        skills: ["Original ideas", "Web Development"],
-        bio: "Heard about these two brothers' idea, might try to code it for fun.",
-      },
+      id: "3",
+      firstName: "Charlie",
+      attributes: ["Go", "Rust", "Kubernetes"],
+      projects: [
+        {
+          name: "Cloud Infrastructure",
+          description: "A scalable backend infrastructure for microservices.",
+        },
+        {
+          name: "test 2",
+          description: "text",
+        },
+        {
+          name: "test 3",
+          description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo.",
+        },
+      ],
+    },
   ];
 
   const [currentIndex, setCurrentIndex] = React.useState(0);
@@ -74,51 +80,80 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
         if (currentIndex < mockProfiles.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
-            alert("No more profiles available.");
+            setCurrentIndex(-1);
         }
     }, 650); 
   };
 
-  const currentProfile = mockProfiles[currentIndex];
+  const currentProfile = currentIndex !== null && currentIndex < mockProfiles.length 
+  ? mockProfiles[currentIndex] 
+  : null;
 
   return (
     <div className="matching-page">
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
       {/* Current Profile */}
-      <div className="profile-container">
-        {currentProfile ? (
-          <div 
-            key={currentProfile.id} 
-            className={`profile-card ${
-            swipeDirection === "right" ? "swipe-right" : ""
-          } ${swipeDirection === "left" ? "swipe-left" : ""}`}
-        >
-            <h2 className="left-title">{currentProfile.name}, {currentProfile.age}</h2>
-            <p className="left-text small-spacing">📍 {currentProfile.location}</p>
-            <p className="left-text small-spacing">🏫 {currentProfile.school}</p>
-            <h3>About Me</h3>
-            <p className = "bio">{currentProfile.bio}</p>
-            <p>Languages: {currentProfile.languages.join(", ")}</p>
-            <p>Skills: {currentProfile.skills.join(", ")}</p> 
+      {currentProfile ? (
+        <div 
+          key={currentProfile.id} 
+          className={`profile-card ${
+          swipeDirection === "right" ? "swipe-right" : ""
+        } ${swipeDirection === "left" ? "swipe-left" : ""}`}
+      >
+        <div className="card-content">
+          <h2 className="title">{currentProfile.firstName}</h2>
 
-            <div className="action-buttons">
-              <button
-                className="reject-btn"
-                onClick={() => handleDecision("reject")}>
-                    <img src="/cross.svg"/>
-              </button>
-              <button
-                className="accept-btn"
-                onClick={() => handleDecision("accept")}>
-                    <img src="/heart.svg"/>
-              </button>
-            </div>
+          {/* Attributes */}
+          <div className="section-header">
+            <img src="/tag.svg" className="section-header-icon"/>
+            Attributes
           </div>
-        ) : (
-          <p>No profiles available. Check back later!</p>
-        )}
-      </div>
+          <div className="attributes">
+            {currentProfile.attributes.map((attribute, index) => (
+              <span key={index} className="attribute-tag">{attribute}</span>
+            ))}
+          </div>
+
+          {/* Divider */}
+          <hr className="section-divider" />
+
+          {/* Projects */}
+          <div className="projects">
+            <div className="section-header">
+              <img src="/book.svg" className="section-header-icon"/>
+              Projects
+            </div>
+            {currentProfile.projects.map((project, index) => (
+              <div key={index} className="project">
+                <p className="project-name">
+                  {project.name}</p>
+                <p className="project-description">{project.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+          {/* Action Buttons */}
+          <div className="action-buttons">
+            <button
+              className="reject-btn"
+              onClick={() => handleDecision("reject")}>
+                  <img src="/cross.svg"/>
+            </button>
+            <button
+              className="accept-btn"
+              onClick={() => handleDecision("accept")}>
+                  <img src="/heart.svg"/>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="no-profiles-message">
+          <h2>No Profiles Left</h2>
+          <p>Come back later for some more matches!</p>
+        </div>
+      )}
     </div>
   );
 };
