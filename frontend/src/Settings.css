@@ -1,70 +1,112 @@
 .settings-page {
+    font-family: Arial, sans-serif;
     padding: 20px;
-  }
-  
-  .tabs {
+    width: 100%;
     display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-  }
-  
-  .tab {
-    cursor: pointer;
-    /* background-color: #f4f4f4; */
-    border-radius: 5px;
-    font-weight: bold;
-  }
-  
-  .tab.active {
-    color: white;
+    flex-direction: column;
+    justify-content: flex-start; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
   }
   
   .settings-container {
-    max-width: 600px;
-    margin: 0 auto;
+    width: 90%; /* Takes up 90% of the screen width */
+    max-width: 700px;
     background: white;
-    padding: 20px;
-    border-radius: 10px;
+    padding: 30px;
+    border-radius: 30px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    max-width: 90%; 
   }
   
-  .settings-form .form-group {
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  
+  .section {
+    margin-bottom: 40px;
+  }
+  
+  h2 {
+    font-size: 1.2rem;
+    color: #888; /* Light gray color for section headings */
     margin-bottom: 15px;
+    text-align: left;
   }
   
-  .settings-form label {
-    display: block;
+  .form-row {
+    display: flex;
+    gap: 50px;
+    margin-bottom: 20px; /* Add spacing between rows */
+  }
+  
+  .form-group {
+    flex: 1;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
     font-weight: bold;
+    color: #888; /* Light gray color for subsection headings */
+    display: block;
     margin-bottom: 5px;
+    text-align: left; /* Aligns the label to the right */
   }
   
-  .settings-form input,
-  .settings-form textarea {
-    width: 90%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 1rem;
-  }
-  
-  .settings-form textarea {
-    resize: none;
-    height: 80px;
-  }
-  
-  .save-button {
-    display: block;
+  textarea,
+  input,
+  select {
     width: 100%;
-    padding: 10px;
-    background-color: #f2b0ff;
-    color: white;
+    padding: 17px 10px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    font-size: 1rem;
+    background-color: #f9f9f9; /* Matches the style of the example */
+    color: #333;
+    box-sizing: border-box;
+  }
+
+  textarea {
+    resize: none;
+    height: 100px;
+  }
+  
+  select {
+    height: auto;
+  }
+  
+  .settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
     font-weight: bold;
+    border-radius: 30px;
     border: none;
-    border-radius: 5px;
     cursor: pointer;
   }
   
-  .save-button:hover {
+  .cancel-btn {
+    background-color: #ddd;
+    color: black;
+  }
+  
+  .save-btn {
+    background-color: #f7d1ff;
+    color: black;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #bbb;
+  }
+  
+  .save-btn:hover {
     background-color: #f385ff;
   }
   

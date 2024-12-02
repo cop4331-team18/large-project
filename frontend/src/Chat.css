@@ -8,6 +8,7 @@
   /* Chat Container Styles */
   .chat-container {
     border: 1px solid #ddd;
+    border-radius: 30px;
     margin-top: 10px;
     margin-bottom: 30px;
     padding-left: 20px;
@@ -19,7 +20,7 @@
   .left-panel {
     width: 40%;
     border-right: solid;
-    border-color: black;
+    border-color: rgb(192, 192, 192);
     border-width: 1px;
   }
 
@@ -39,18 +40,19 @@
     align-items: center;
 
     input {
-      height: 40px;
+      height: 25px;
       margin-left: 20px;
       margin-right: 5px;
       width: 100%;
       padding-left: 10px;
+      border-radius: 10px;
     }
 
     button {
-      background-color: black;
+      background-color: #373737;
       margin-left: 5px;
       margin-right: 20px;
-      height: 50px;
+      height: 45px;
       width: 60px;
     }
   }
