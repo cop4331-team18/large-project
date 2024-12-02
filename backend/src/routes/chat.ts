@@ -10,12 +10,13 @@ export const chatSocketEvents = (io: Server) => {
         if (!user) {
             return;
         }
-        socket.on("message", async (data: ChatMessageInput) => {
+        socket.on("chat", async (data: ChatMessageInput) => {
             const message: ChatMessage = {
                 message: data.message,
                 project: new ObjectId(data.project),
                 sender: new ObjectId(user._id),
                 createdAt: new Date(),
+                messageType: 'CHAT',
             };
             // TODO: Make sure user is in the project
             const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
