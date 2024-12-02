@@ -55,11 +55,14 @@
 
 .attribute-tag {
   display: inline-block;
-  padding: 8px 15px;
+  padding: 8px 14px;
+  background: linear-gradient(135 deg, #e1f5fe, #b3e5fc);
   background-color: #f7d1ff;
   color: #444242; 
   font-size: 0.9rem;
-  border-radius: 20px; 
+  font-weight: 500;
+  border-radius: 16px; 
+  margin: 5px;
   border: 1px solid #eaacf7; 
   white-space: nowrap;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
