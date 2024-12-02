@@ -60,14 +60,19 @@ body, html {
   display: flex;
   justify-content: center;
   margin-top: 15px;
+  margin-bottom: 20px;
 }
 
 .tab {
-  margin: 0 15px;
+  margin-top: 0 15px;
+  margin-bottom: 0 15px;
+  margin-left: 40px;
+  margin-right: 40px;
   text-align: center;
   cursor: pointer;
   font-weight: bold;
   padding: 10px 15px;
+  border-radius: 5px;
 }
 
 .tab.active {
@@ -140,4 +145,12 @@ button:focus {
 
 input {
   color-scheme: light-only;
+}
+
+.chat-notifications {
+  background-color: red;
+  color: white;
+  border-radius: 8px;
+  margin-left: 5px;
+  padding: 5px;
 }

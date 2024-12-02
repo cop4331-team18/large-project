@@ -13,6 +13,8 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [socketEvents, setSocketEvents] = useState<Set<string>>(new Set());
+  const [chatNotifications, setChatNotifications] = useState<number>(0);
 
   const refreshSocket = (loginStatus: boolean) => {
     if (loginStatus) {
@@ -26,8 +28,12 @@ function App() {
       }));
     } else {
       if (socket) {
+        socketEvents.forEach((event: string) => {
+          socket.off(event);
+        })
         socket.close();
       }
+      setSocketEvents(new Set());
       setSocket(null);
     }
   }
@@ -43,9 +49,12 @@ function App() {
 
   useEffect(() => {
     if (socket) {
-      socket.on("connection", (data) => {
-        console.log(data)
-      })
+      if (!socketEvents.has("connection")) {
+        setSocketEvents(prev => prev.add("connection"));
+        socket.on("connection", (data) => {
+          console.log(data)
+        })
+      }
     }
   }, [socket])
 
@@ -56,19 +65,18 @@ function App() {
   return (
     <Router>
       <Routes>
-
         <Route path="/" element={<HomePage user={user} fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>} />
         <Route
-         path="/login"
-         element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>}
+        path="/login"
+        element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>}
         />
-        <Route path="/matching" element={<MatchingPage />} />
+        <Route path="/matching" element={<MatchingPage chatNotifications={chatNotifications}/>} />
         <Route
           path="*"
           element={<Navigate to="/" replace />}
         />
-        <Route path="/chat" element={<ChatPage socket={socket}/>} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/chat" element={<ChatPage socket={socket} socketEvents={socketEvents} setSocketEvents={setSocketEvents} chatNotifications={chatNotifications} setChatNotifications={setChatNotifications} isLoggedIn={isLoggedIn}/>} />
+        <Route path="/settings" element={<SettingsPage chatNotifications={chatNotifications}/>} />
       </Routes>
     </Router>
   );

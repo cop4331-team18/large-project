@@ -1,16 +1,24 @@
-import { useNavigate } from "react-router-dom";
 import "./Chat.css";
 import { Socket } from "socket.io-client";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ChatMessage, ChatMessageInput } from "./util/constants";
+import { apiCall, ChatMessage, ChatMessageInput, Project } from "./util/constants";
+import Tabs from "./components/Tabs";
+import { useNavigate } from "react-router-dom";
 
 interface ChatProps {
-  socket: Socket | null,
+  socket: Socket | null;
+  socketEvents: Set<string>;
+  setSocketEvents: React.Dispatch<React.SetStateAction<Set<string>>>;
+  chatNotifications: number;
+  setChatNotifications: React.Dispatch<React.SetStateAction<number>>;
+  isLoggedIn: boolean | null;
 }
 
-const ChatPage = ({socket}: ChatProps) => {
+const ChatPage = ({socket, socketEvents, setSocketEvents, chatNotifications, setChatNotifications, isLoggedIn}: ChatProps) => {
   const navigate = useNavigate();
   const [messageInput, setMessageInput] = useState<string>('');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [currentChat, setCurrentChat] = useState<string>('');
 
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
@@ -18,11 +26,34 @@ const ChatPage = ({socket}: ChatProps) => {
 
   useEffect(() => {
     if (socket) {
+      if (!socketEvents.has("message-res")) {
+        setSocketEvents(prev => prev.add("message-res"));
         socket.on("messasge-res", (data: ChatMessage) => {
           alert(`RECIEVED MESSAGE: ${JSON.stringify(data)}`);
+          setChatNotifications(prev => {
+            return prev+1;
+          });
         });
+      }
     }
   }, [socket]);
+
+  const fetchUserProjects = async() => {
+    const response = await apiCall.get(`/projects/get`);
+    const data: any = response.data;
+    setProjects(data.projects);
+    if (data.projects.length > 0) {
+      setCurrentChat(data.projects[0]._id);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn === false) {
+      navigate("/login");
+    } else if (isLoggedIn === true) {
+      fetchUserProjects();
+    }
+}, [isLoggedIn]);
 
   const sendChatMessage = (e: FormEvent) => {
     e.preventDefault();
@@ -38,31 +69,31 @@ const ChatPage = ({socket}: ChatProps) => {
   return (
     <div className="chat-page">
       {/* Tabs */}
-      <div className="tabs">
-        <div className="tab active">
-          <span>Chat</span>
-        </div>
-        <div className="tab" onClick={() => navigate("/matching")}>
-          <span>Matching</span>
-        </div>
-        <div className="tab" onClick={() => navigate("/settings")}>
-          <span>Settings</span>
-        </div>
-      </div>
+      <Tabs currentTab="chat" chatNotifications={chatNotifications}/>
 
       {/* Chat Content */}
       <div className="chat-container">
         <div className="left-panel">
-
+          <h1>
+            Matches
+          </h1>
+          {projects.length === 0 && <p>No projects found!</p>}
+          {projects.map((project) => 
+            <div className="chat-project" key={project._id} onClick={() => setCurrentChat(project._id)} style={{cursor: 'pointer',  background: (project._id === currentChat) ? 'Gainsboro' : ''}}>
+              <p>
+                {project.name}
+              </p>
+            </div>
+          )}
         </div>
         <div className="right-panel">
           <div className="message-container">
 
           </div>
-          <div className="input-container">
+          <form className="input-container" onSubmit={sendChatMessage}>
             <input type="text" placeholder="Send a message" value={messageInput} onChange={handleMessageInputChange}></input>
             <button onClick={sendChatMessage}>➣</button>
-          </div>
+          </form>
         </div>
       </div>
     </div>

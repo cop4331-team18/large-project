@@ -11,23 +11,25 @@
     border-radius: 30px;
     margin-top: 10px;
     margin-bottom: 30px;
-    padding-left: 20px;
-    padding-right: 20px;
     display: flex;
     height: 100%;
   }
   
   .left-panel {
-    width: 40%;
+    width: 30%;
     border-right: solid;
     border-color: rgb(192, 192, 192);
     border-width: 1px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .right-panel {
-    width: 60%;
+    width: 70%;
     display: flex;
     flex-direction: column;
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .message-container {
@@ -55,5 +57,10 @@
       height: 45px;
       width: 60px;
     }
+
+  }
+  
+  .chat-project {
+    padding: 5px;
   }
 }

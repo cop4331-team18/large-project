@@ -1,3 +1,4 @@
+/* Stuff for settings-page only */
 .settings-page {
     font-family: Arial, sans-serif;
     padding: 20px;
@@ -109,4 +110,3 @@
   .save-btn:hover {
     background-color: #f385ff;
   }
-  

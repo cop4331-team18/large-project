@@ -1,9 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import "./Settings.css";
+import Tabs from "./components/Tabs";
 
-const SettingsPage: React.FC = () => {
-  const navigate = useNavigate();
+interface SettingsProp {
+  chatNotifications: number;
+}
+
+const SettingsPage: React.FC<SettingsProp> = ({chatNotifications}: SettingsProp) => {
+  // State to manage user profile data
+  const [username, setUsername] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [bio, setBio] = useState<string>("");
 
   const handleSave = () => {
     alert("Profile saved successfully!");
@@ -18,17 +25,7 @@ const SettingsPage: React.FC = () => {
   return (
     <div className="settings-page">
       {/* Tabs */}
-      <div className="tabs">
-        <div className="tab" onClick={() => navigate("/chat")}>
-          <span>Chat</span>
-        </div>
-        <div className="tab" onClick={() => navigate("/matching")}>
-          <span>Matching</span>
-        </div>
-        <div className="tab active">
-          <span>Settings</span>
-        </div>
-      </div>
+      <Tabs chatNotifications={chatNotifications} currentTab="settings"/>
 
       {/* Main Settings Content */}
       <div className="settings-container">
