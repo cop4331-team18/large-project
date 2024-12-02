@@ -5,7 +5,7 @@ import HomePage from './HomePage';
 import MatchingPage from './MatchingPage';
 import ChatPage from './Chat';
 import SettingsPage from './Settings';
-import { apiCall, SERVER_BASE_URL, User } from './util/constants';
+import { apiCall, ChatMessage, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
 import "./App.css"
 
@@ -15,6 +15,8 @@ function App() {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [socketEvents, setSocketEvents] = useState<Set<string>>(new Set());
   const [chatNotifications, setChatNotifications] = useState<number>(0);
+  const [newMessages, setNewMessages] = useState<Map<string, ChatMessage[]>>(new Map());
+  const [oldMessages, setOldMessages] = useState<Map<string, ChatMessage[]>>(new Map());
 
   const refreshSocket = (loginStatus: boolean) => {
     if (loginStatus) {
@@ -75,7 +77,19 @@ function App() {
           path="*"
           element={<Navigate to="/" replace />}
         />
-        <Route path="/chat" element={<ChatPage socket={socket} socketEvents={socketEvents} setSocketEvents={setSocketEvents} chatNotifications={chatNotifications} setChatNotifications={setChatNotifications} isLoggedIn={isLoggedIn}/>} />
+        <Route path="/chat" element={
+          <ChatPage 
+            socket={socket}
+            socketEvents={socketEvents}
+            setSocketEvents={setSocketEvents}
+            chatNotifications={chatNotifications}
+            setChatNotifications={setChatNotifications}
+            isLoggedIn={isLoggedIn}
+            newMessages={newMessages}
+            setNewMessages={setNewMessages}
+            oldMessages={oldMessages}
+            setOldMessages={setOldMessages}/>
+          } />
         <Route path="/settings" element={<SettingsPage chatNotifications={chatNotifications}/>} />
       </Routes>
     </Router>

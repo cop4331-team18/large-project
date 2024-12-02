@@ -12,14 +12,17 @@ interface ChatProps {
   chatNotifications: number;
   setChatNotifications: React.Dispatch<React.SetStateAction<number>>;
   isLoggedIn: boolean | null;
+  newMessages: Map<string, ChatMessage[]>;
+  setNewMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
+  oldMessages: Map<string, ChatMessage[]>;
+  setOldMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
 }
 
-const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, chatNotifications, setChatNotifications, isLoggedIn}: ChatProps) => {
+const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, chatNotifications, setChatNotifications, isLoggedIn, newMessages, setNewMessages}: ChatProps) => {
   const navigate = useNavigate();
   const [messageInput, setMessageInput] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentChat, setCurrentChat] = useState<string>('');
-  const [newMessages, setNewMessages] = useState<Map<string, ChatMessage[]>>(new Map());
 
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
@@ -34,7 +37,6 @@ const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, c
             const newMap = new Map(prev);
             const messages: ChatMessage[] = newMap.get(data.project) || [];
             newMap.set(data.project, [data, ...messages]);
-            console.log(newMap.get(data.project));
             return newMap;
           });
           setChatNotifications(prev => {
@@ -118,8 +120,7 @@ const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, c
           <h1>{projects && currentChat && projects.find((project) => project._id === currentChat)!.name}</h1>
           <div className="message-container">
             {(newMessages.get(currentChat) || []).map(message => 
-              // TODO: Add id to messages in backend 
-              <MessageView key={Math.random()} {...message}/> 
+              <MessageView key={message._id} {...message}/> 
             )}
           </div>
           <form className="input-container" onSubmit={sendChatMessage}>
