@@ -1,9 +1,10 @@
 import "./Chat.css";
 import { Socket } from "socket.io-client";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { apiCall, ChatMessage, ChatMessageInput, getDateString, Project } from "./util/constants";
+import { apiCall, CHAT_PAGE_SIZE, ChatMessage, ChatMessageInput, getDateString, Project } from "./util/constants";
 import Tabs from "./components/Tabs";
 import { useNavigate } from "react-router-dom";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 interface ChatProps {
   socket: Socket | null;
@@ -16,9 +17,32 @@ interface ChatProps {
   setNewMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
   oldMessages: Map<string, ChatMessage[]>;
   setOldMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
+  oldMessagesPageNum: Map<string, number>;
+  setOldMessagesPageNum: React.Dispatch<React.SetStateAction<Map<string, number>>>;
+  oldMessagesHasNext: Map<string, boolean>;
+  setOldMessagesHasNext: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
+  messagesResConnectDate: Date;
+  setMessagesResConnectDate: React.Dispatch<React.SetStateAction<Date>>;
 }
 
-const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, chatNotifications, setChatNotifications, isLoggedIn, newMessages, setNewMessages}: ChatProps) => {
+const ChatPage: React.FC<ChatProps> = ({
+  socket, 
+  socketEvents,
+  setSocketEvents,
+  chatNotifications,
+  setChatNotifications,
+  isLoggedIn,
+  newMessages,
+  setNewMessages,
+  oldMessages,
+  setOldMessages,
+  oldMessagesPageNum,
+  setOldMessagesPageNum,
+  oldMessagesHasNext,
+  setOldMessagesHasNext,
+  messagesResConnectDate,
+  setMessagesResConnectDate,
+}: ChatProps) => {
   const navigate = useNavigate();
   const [messageInput, setMessageInput] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>([]);
@@ -33,6 +57,7 @@ const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, c
       if (!socketEvents.has("message-res")) {
         setSocketEvents(prev => prev.add("message-res"));
         socket.on("messasge-res", (data: ChatMessage) => {
+          setMessagesResConnectDate(new Date());
           setNewMessages(prev => {
             const newMap = new Map(prev);
             const messages: ChatMessage[] = newMap.get(data.project) || [];
@@ -81,6 +106,34 @@ const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, c
     }
   };
 
+  const loadOldMessages = async() => {
+    const pageNum: number = oldMessagesPageNum.get(currentChat) || 0;
+    const response = await apiCall.get("/chat/getpage", {
+      params: {
+        projectId: currentChat,
+        createdAtBefore: messagesResConnectDate,
+        pageNum: pageNum,
+        pageSize: CHAT_PAGE_SIZE,
+      }
+    });
+    const data: any = response.data;
+    const messages: ChatMessage[] = data.messages;
+    setOldMessages(prev => {
+      const newMap = new Map(prev);
+      const oldMessagesForCurrentChat: ChatMessage[] = newMap.get(currentChat) || [];
+      newMap.set(currentChat, [...oldMessagesForCurrentChat, ...messages]);
+      return newMap;
+    });
+    setOldMessagesHasNext(prev => prev.set(currentChat, data.hasNext));
+    setOldMessagesPageNum(prev => prev.set(currentChat, pageNum+1));
+  }
+
+  useEffect(() => {
+    if (currentChat && !oldMessages.get(currentChat)) {
+      loadOldMessages();
+    }
+  }, [currentChat]);
+
   const MessageView: React.FC<ChatMessage> = (message: ChatMessage) => {
     return (
       <div className="message-view">
@@ -118,10 +171,34 @@ const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, c
         </div>
         <div className="right-panel">
           <h1>{projects && currentChat && projects.find((project) => project._id === currentChat)!.name}</h1>
-          <div className="message-container">
+          <div className="message-container" id="message-container">
             {(newMessages.get(currentChat) || []).map(message => 
               <MessageView key={message._id} {...message}/> 
             )}
+            <InfiniteScroll
+              dataLength={(oldMessages.get(currentChat) || []).length}
+              next={loadOldMessages}
+              className="infinite-scroll"
+              inverse={true}
+              hasMore={oldMessagesHasNext.get(currentChat) === true || oldMessagesHasNext.get(currentChat) === undefined}
+              loader={
+                <div style={{display: "flex", justifyContent: "center", padding: "5px"}}>
+                  <div className="loader"></div>
+                </div>
+              }
+              endMessage={
+                <div>
+                  <p>This is the beginning of the chat.</p>
+                </div>
+              }
+              scrollableTarget="message-container"
+            >
+              {
+                (oldMessages.get(currentChat) || []).map(message => 
+                  <MessageView key={message._id} {...message}/>
+                )
+              }
+            </InfiniteScroll>
           </div>
           <form className="input-container" onSubmit={sendChatMessage}>
             <input type="text" placeholder="Send a message" value={messageInput} onChange={handleMessageInputChange}></input>

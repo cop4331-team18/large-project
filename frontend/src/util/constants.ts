@@ -25,3 +25,5 @@ export const getDateString = (date: Date) => {
         second: 'numeric'
     });
 }
+
+export const CHAT_PAGE_SIZE: number = 20;

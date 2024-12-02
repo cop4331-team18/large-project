@@ -7,7 +7,6 @@
     flex-direction: column;
     justify-content: flex-start; /* Centers content vertically */
     align-items: center; /* Centers content horizontally */
-  }
   
   .settings-container {
     width: 90%; /* Takes up 90% of the screen width */
@@ -110,3 +109,4 @@
   .save-btn:hover {
     background-color: #f385ff;
   }
+}

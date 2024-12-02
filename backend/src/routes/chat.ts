@@ -75,17 +75,22 @@ chatRouter.get("/getpage", async (req: Request, res: Response) => {
             returnWithErrorJson(res, "User not in project");
             return;
         }
-        const cursor: FindCursor<WithId<ChatMessage>> = db.collection<ChatMessage>(CHAT_COLLECTION_NAME).find({
+        const page: WithId<ChatMessage>[] = await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).find({
             project: new ObjectId(params.projectId),
             createdAt: {$lt : new Date(params.createdAtBefore)},
         }, {
             skip: pageNum*pageSize,
-            limit: pageSize,
+            limit: pageSize+1,
             sort: {createdAt : -1},
-        });
+        }).toArray();
+        let hasNext = false;
+        if (page.length === pageSize+1) {
+            hasNext = true;
+            page.pop();
+        }
         const resJson: ChatGetPageResponse = {
-            hasNext: await cursor.hasNext(),
-            messages: await cursor.toArray(),
+            hasNext: hasNext,
+            messages: page,
         };
         res.status(200).json(resJson);
     } catch (error) {

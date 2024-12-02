@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
 
@@ -8,9 +8,10 @@ interface SettingsProp {
 
 const SettingsPage: React.FC<SettingsProp> = ({chatNotifications}: SettingsProp) => {
   // State to manage user profile data
-  const [username, setUsername] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [bio, setBio] = useState<string>("");
+  // Commented because unused fields causes errors in prod
+  // const [username, setUsername] = useState<string>("");
+  // const [email, setEmail] = useState<string>("");
+  // const [bio, setBio] = useState<string>("");
 
   const handleSave = () => {
     alert("Profile saved successfully!");

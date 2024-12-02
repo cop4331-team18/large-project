@@ -17,6 +17,9 @@ function App() {
   const [chatNotifications, setChatNotifications] = useState<number>(0);
   const [newMessages, setNewMessages] = useState<Map<string, ChatMessage[]>>(new Map());
   const [oldMessages, setOldMessages] = useState<Map<string, ChatMessage[]>>(new Map());
+  const [oldMessagesPageNum, setOldMessagesPageNum] = useState<Map<string, number>>(new Map());
+  const [oldMessagesHasNext, setOldMessagesHasNext] = useState<Map<string, boolean>>(new Map());
+  const [messagesResConnectDate, setMessagesResConnectDate] = useState<Date>(new Date());
 
   const refreshSocket = (loginStatus: boolean) => {
     if (loginStatus) {
@@ -88,7 +91,13 @@ function App() {
             newMessages={newMessages}
             setNewMessages={setNewMessages}
             oldMessages={oldMessages}
-            setOldMessages={setOldMessages}/>
+            setOldMessages={setOldMessages}
+            oldMessagesPageNum={oldMessagesPageNum}
+            setOldMessagesPageNum={setOldMessagesPageNum}
+            oldMessagesHasNext={oldMessagesHasNext}
+            setOldMessagesHasNext={setOldMessagesHasNext}
+            messagesResConnectDate={messagesResConnectDate}
+            setMessagesResConnectDate={setMessagesResConnectDate}/>
           } />
         <Route path="/settings" element={<SettingsPage chatNotifications={chatNotifications}/>} />
       </Routes>
