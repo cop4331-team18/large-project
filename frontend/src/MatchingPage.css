@@ -5,7 +5,7 @@
   align-items: center;
   justify-content: flex-start;
   height: 100vh; /* Full viewport height */
-  background-color: #f8f9fa; /* Light background color */
+  background-color: #f8f9fa; 
 }
 
 /* Profile Card (as Main Container) */
@@ -48,24 +48,24 @@
 /* Attributes Section */
 .attributes {
   display: flex;
-  flex-wrap: wrap; /* Allow tags to wrap onto a new line if they don't fit */
-  gap: 10px; /* Space between tags */
-  margin-bottom: 20px; /* Space below attributes */
+  flex-wrap: wrap; 
+  gap: 10px; 
+  margin-bottom: 20px; 
 }
 
 .attribute-tag {
   display: inline-block;
   padding: 8px 15px;
-  background-color: #f7d1ff; /* Light blue background */
-  color: #444242; /* Blue text */
+  background-color: #f7d1ff;
+  color: #444242; 
   font-size: 0.9rem;
-  border-radius: 20px; /* Rounded edges for bubble look */
-  border: 1px solid #eaacf7; /* Subtle border */
-  white-space: nowrap; /* Prevent the text from breaking */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  border-radius: 20px; 
+  border: 1px solid #eaacf7; 
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
 }
 
-/* Section Headers (e.g., Projects, About Me) */
+/* Section Headers */
 .section-header {
   font-size: 1.2rem;
   font-weight: bold;
@@ -82,13 +82,13 @@
   display: inline-block;
 }
 
-/* Visual Divider for Sections */
+/* Section Dividers */
 .section-divider {
   height: 1px;
   background-color: #d9d9d9;
-  margin: 15px 0; /* Space around divider */
+  margin: 15px 0;
   border: none;
-  opacity: 0.8; /* Slight transparency for subtle look */
+  opacity: 0.8;
   width: 100%;
 }
 
