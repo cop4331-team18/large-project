@@ -26,6 +26,7 @@
 
 /* Card Content */
 .card-content {
+  font-family: Georgia, 'Times New Roman', Times, serif;
   flex-grow: 1; 
   display: flex;
   flex-direction: column;
@@ -221,6 +222,7 @@ h2 {
 
 /* Message when no profiles are left */
 .no-profiles-message {
+  font-family: Georgia, 'Times New Roman', Times, serif;
   display: flex;
   flex-direction: column;
   align-items: center;
