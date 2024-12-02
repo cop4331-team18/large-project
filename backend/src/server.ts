@@ -11,7 +11,7 @@ import projectRouter from './routes/projects';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { SocketWithUser } from './util/types';
-import { chatSocketEvents } from './routes/chat';
+import { chatRouter, chatSocketEvents } from './routes/chat';
 
 const app = express();
 const httpServer = createServer(app);
@@ -31,6 +31,7 @@ app.use(passport.authenticate('session'));
 app.use("/login", loginRouter);
 app.use("/attributes", attributesRouter);
 app.use("/projects", projectRouter);
+app.use("/chat", chatRouter);
 
 app.get("/", async (req: Request, res: Response) => {
     res.status(200).send("Hello!");

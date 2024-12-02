@@ -1,7 +1,7 @@
 import "./Chat.css";
 import { Socket } from "socket.io-client";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { apiCall, ChatMessage, ChatMessageInput, Project } from "./util/constants";
+import { apiCall, ChatMessage, ChatMessageInput, getDateString, Project } from "./util/constants";
 import Tabs from "./components/Tabs";
 import { useNavigate } from "react-router-dom";
 
@@ -12,9 +12,13 @@ interface ChatProps {
   chatNotifications: number;
   setChatNotifications: React.Dispatch<React.SetStateAction<number>>;
   isLoggedIn: boolean | null;
+  newMessages: Map<string, ChatMessage[]>;
+  setNewMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
+  oldMessages: Map<string, ChatMessage[]>;
+  setOldMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
 }
 
-const ChatPage = ({socket, socketEvents, setSocketEvents, chatNotifications, setChatNotifications, isLoggedIn}: ChatProps) => {
+const ChatPage: React.FC<ChatProps> = ({socket, socketEvents, setSocketEvents, chatNotifications, setChatNotifications, isLoggedIn, newMessages, setNewMessages}: ChatProps) => {
   const navigate = useNavigate();
   const [messageInput, setMessageInput] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>([]);
@@ -29,7 +33,12 @@ const ChatPage = ({socket, socketEvents, setSocketEvents, chatNotifications, set
       if (!socketEvents.has("message-res")) {
         setSocketEvents(prev => prev.add("message-res"));
         socket.on("messasge-res", (data: ChatMessage) => {
-          alert(`RECIEVED MESSAGE: ${JSON.stringify(data)}`);
+          setNewMessages(prev => {
+            const newMap = new Map(prev);
+            const messages: ChatMessage[] = newMap.get(data.project) || [];
+            newMap.set(data.project, [data, ...messages]);
+            return newMap;
+          });
           setChatNotifications(prev => {
             return prev+1;
           });
@@ -57,14 +66,35 @@ const ChatPage = ({socket, socketEvents, setSocketEvents, chatNotifications, set
 
   const sendChatMessage = (e: FormEvent) => {
     e.preventDefault();
-    if (socket) {
+    if (socket && messageInput) {
       const message: ChatMessageInput = {
         message: messageInput,
-        project: '674b8e7d3a47d64473d09b4c', // TODO: change this after better functionality
+        project: currentChat,
       };
-      socket.emit("message", message);
+      socket.emit("chat", message);
+      setMessageInput("");
+      const button = e.currentTarget;
+      button.setAttribute("disabled", "true");
+      setTimeout(() => {
+        button.removeAttribute("disabled");
+      }, 750);
     }
   };
+
+  const MessageView: React.FC<ChatMessage> = (message: ChatMessage) => {
+    return (
+      <div className="message-view">
+        <div>
+          {/* TODO: need an endpoint or some way to fetch the user from backend */}
+          <span>{message.sender}</span>
+          <span>{getDateString(message.createdAt)}</span>
+        </div>
+        <p>
+          {message.message}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="chat-page">
@@ -87,8 +117,11 @@ const ChatPage = ({socket, socketEvents, setSocketEvents, chatNotifications, set
           )}
         </div>
         <div className="right-panel">
+          <h1>{projects && currentChat && projects.find((project) => project._id === currentChat)!.name}</h1>
           <div className="message-container">
-
+            {(newMessages.get(currentChat) || []).map(message => 
+              <MessageView key={message._id} {...message}/> 
+            )}
           </div>
           <form className="input-container" onSubmit={sendChatMessage}>
             <input type="text" placeholder="Send a message" value={messageInput} onChange={handleMessageInputChange}></input>

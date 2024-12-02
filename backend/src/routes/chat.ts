@@ -1,31 +1,95 @@
 import { Server } from "socket.io";
 import { ChatMessage, ChatMessageInput, Project, SocketWithUser } from "../util/types";
-import { ObjectId, WithId } from "mongodb";
+import { FindCursor, ObjectId, WithId } from "mongodb";
 import { db } from "../util/db";
-import { PROJECT_COLLECTION_NAME } from "../util/constants";
+import { CHAT_COLLECTION_NAME, PROJECT_COLLECTION_NAME, returnWithErrorJson } from "../util/constants";
+import express, { Router, Request, Response } from "express";
 
+// Ideally, you'd encrypt messages. For the sake of simplicity, I'll ignore that.
 export const chatSocketEvents = (io: Server) => {
     io.on("connection", (socket: SocketWithUser) => {
         const user: Express.User | undefined | null = socket.request.user;
         if (!user) {
             return;
         }
-        socket.on("message", async (data: ChatMessageInput) => {
+        socket.on("chat", async (data: ChatMessageInput) => {
             const message: ChatMessage = {
                 message: data.message,
                 project: new ObjectId(data.project),
                 sender: new ObjectId(user._id),
                 createdAt: new Date(),
+                messageType: 'CHAT',
             };
-            // TODO: Make sure user is in the project
-            const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
-                _id: message.project,
-            });
-            if (!project) {
-                return;
+            try {
+                if (!message.project) {
+                    return;
+                }
+                // TODO: Make sure user is in the project
+                const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+                    _id: message.project,
+                });
+                if (!project) {
+                    return;
+                }
+                const result = await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).insertOne(message);
+                const socketMessage: WithId<ChatMessage> = (await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
+                // TODO: Send to everyone in project
+                io.to(`user:${project.createdBy}`).emit("messasge-res", socketMessage);
+            } catch (error) {
+                console.log(error);
             }
-            // TODO: Save message to database, send to everyone in project
-            io.to(`user:${project.createdBy}`).emit("messasge-res", message);
         });
     });
 };
+
+export const chatRouter: Router = express.Router();
+
+interface ChatGetPageParams {
+    projectId: string;
+    createdAtBefore: string;
+    pageNum: string;
+    pageSize: string;
+}
+
+interface ChatGetPageResponse {
+    messages: ChatMessage[];
+    hasNext: boolean;
+}
+
+chatRouter.get("/getpage", async (req: Request, res: Response) => {
+    try {
+        const params: ChatGetPageParams = req.query as unknown as ChatGetPageParams;
+        const pageNum = parseInt(params.pageNum), pageSize = parseInt(params.pageSize);
+        if (Number.isNaN(pageNum) || pageNum < 0 || Number.isNaN(pageSize) || pageSize < 0) {
+            returnWithErrorJson(res, "Invalid pageNum and pageSize");
+            return;
+        } else if (!params.projectId) {
+            returnWithErrorJson(res, "Project id not given.");
+            return;
+        }
+        // TODO: Make sure user is in the project
+        const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+            _id: new ObjectId(params.projectId),
+        });
+        if (!project) {
+            returnWithErrorJson(res, "User not in project");
+            return;
+        }
+        const cursor: FindCursor<WithId<ChatMessage>> = db.collection<ChatMessage>(CHAT_COLLECTION_NAME).find({
+            project: new ObjectId(params.projectId),
+            createdAt: {$lt : new Date(params.createdAtBefore)},
+        }, {
+            skip: pageNum*pageSize,
+            limit: pageSize,
+            sort: {createdAt : -1},
+        });
+        const resJson: ChatGetPageResponse = {
+            hasNext: await cursor.hasNext(),
+            messages: await cursor.toArray(),
+        };
+        res.status(200).json(resJson);
+    } catch (error) {
+        console.log(error);
+        returnWithErrorJson(res, "Server error");
+    }
+});

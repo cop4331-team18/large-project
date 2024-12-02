@@ -7,6 +7,7 @@ export const MONGO_CONNECTION_STRING: string = process.env.MONGO_CONNECTION_STRI
 export const MONGO_DB_NAME: string = process.env.MONGO_DB_NAME!;
 export const USER_COLLECTION_NAME: string = "Users";
 export const PROJECT_COLLECTION_NAME: string = "Projects";
+export const CHAT_COLLECTION_NAME: string = "Chat";
 export const SESSION_SECRET: string = process.env.SESSION_SECRET!;
 export const ALLOWED_ORIGINS: string[] = process.env.ALLOWED_ORIGINS!.split(", ");
 
