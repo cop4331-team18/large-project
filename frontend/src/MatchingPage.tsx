@@ -3,17 +3,22 @@ import "./MatchingPage.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
 
-interface Project {
+// Mock Definitions (until backend connected)
+type ObjectId = string; // placeholder
+
+type User = {
+  firstName: string;
+  lastName: string;
+  attributes: string[];
+};
+
+type Project = {
   name: string;
   description: string;
-}
-
-interface Profile {
-  id: string;
-  firstName: string;
   attributes: string[];
-  projects: Project[];
-}
+  createdBy: ObjectId;
+  owner: User;
+};
 
 interface MatchingPageProps {
   chatNotifications: number;
@@ -21,51 +26,39 @@ interface MatchingPageProps {
 
 const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: MatchingPageProps) => {
 
-  const mockProfiles: Profile[] = [
+  const mockProjects: Project[] = [
     {
-      id: "1",
-      firstName: "Alice",
-      attributes: ["JavaScript", "Python", "React", "Node.js"],
-      projects: [
-        {
-          name: "MERN Stack App",
-          description: "An application that uses MongoDB, Express, React, and Node.js",
-        },
-        {
-          name: "School Club Portfolio",
-          description: "Portfolio for a UCF club that displays all achievements and updates"
-        },
-      ],
+      name: "MERN Stack App",
+      description: "An application that uses MongoDB, Express, React, and Node.js",
+      attributes: ["MongoDB", "Express", "React", "Node.js"],
+      createdBy: "1",
+      owner: {
+        firstName: "Alice",
+        lastName: "Smith",
+        attributes: ["JavaScript", "Python", "React", "Node.js"],
+      },
     },
     {
-      id: "2",
-      firstName: "Bob",
-      attributes: ["Unity", "C++", "Game Design"],
-      projects: [
-        {
-          name: "Indie Game",
-          description: "A 2D platformer built with Unity targeting desktop platforms.",
-        },
-      ],
+      name: "Indie Game",
+      description: "A 2D platformer built with Unity targeting desktop platforms.",
+      attributes: ["Unity", "C++", "Python", "JavaScript", "Lua", "GDScript", "Shaders", "Unreal Engine", "WebSocket"],
+      createdBy: "2",
+      owner: {
+        firstName: "Bob",
+        lastName: "Johnson",
+        attributes: ["Unity", "Lua", "Game Design"],
+      },
     },
     {
-      id: "3",
-      firstName: "Charlie",
-      attributes: ["Go", "Rust", "Kubernetes"],
-      projects: [
-        {
-          name: "Cloud Infrastructure",
-          description: "A scalable backend infrastructure for microservices.",
-        },
-        {
-          name: "test 2",
-          description: "text",
-        },
-        {
-          name: "test 3",
-          description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo.",
-        },
-      ],
+      name: "Cloud Infrastructure",
+      description: "A scalable backend infrastructure for microservices.",
+      attributes: ["Go", "Rust", "Ruby", "Bash", "Java", "C#"],
+      createdBy: "3",
+      owner: {
+        firstName: "Charlie",
+        lastName: "Brown",
+        attributes: ["Go", "C#", "Kubernetes"],
+      },
     },
   ];
 
@@ -80,19 +73,19 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
   const handleDecision = (decision: "accept" | "reject") => {
     setSwipeDirection(decision === "accept" ? "right" : "left");
 
-    // Delay to load profile after swipe
+    // Delay to load project after swipe
     setTimeout(() => {
         setSwipeDirection(null);
-        if (currentIndex < mockProfiles.length - 1) {
+        if (currentIndex < mockProjects.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
-            setCurrentIndex(-1);
+            setCurrentIndex(-1); // No more projects
         }
     }, 650); 
   };
 
-  const currentProfile = currentIndex !== null && currentIndex < mockProfiles.length 
-  ? mockProfiles[currentIndex] 
+  const currentProject = currentIndex !== null && currentIndex < mockProjects.length 
+  ? mockProjects[currentIndex] 
   : null;
 
   return (
@@ -102,43 +95,47 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
       <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
 
       {/* Current Profile */}
-      {currentProfile ? (
+      {currentProject ? (
         <div 
-          key={currentProfile.id} 
-          className={`profile-card ${
+          key={currentProject.name} 
+          className={`project-card ${
           swipeDirection === "right" ? "swipe-right" : ""
         } ${swipeDirection === "left" ? "swipe-left" : ""}`}
       >
         <div className="card-content">
-          <h2 className="title">{currentProfile.firstName}</h2>
+          {/* Project Info */}
+          <h2 className="title">{currentProject.name}</h2>
+          <p className="project-description">{currentProject.description}</p>
 
-          {/* Attributes */}
+          {/* Project Attributes */}
           <div className="section-header">
             <img src="/tag.svg" className="section-header-icon"/>
             Attributes
           </div>
-          <div className="attributes">
-            {currentProfile.attributes.map((attribute, index) => (
-              <span key={index} className="attribute-tag">{attribute}</span>
+          <div className="project-attributes">
+            {currentProject.attributes.map((attribute, index) => (
+              <span key={index} className="project-attribute-tag">{attribute}</span>
             ))}
           </div>
 
           {/* Divider */}
           <hr className="section-divider" />
 
-          {/* Projects */}
-          <div className="projects">
+          {/* Owner Info */}
+          <div className="owner-info">
             <div className="section-header">
-              <img src="/book.svg" className="section-header-icon"/>
-              Projects
+              <img src="/owner.svg" className="section-header-icon"/>
+              {currentProject.owner.firstName} {currentProject.owner.lastName}
             </div>
-            {currentProfile.projects.map((project, index) => (
-              <div key={index} className="project">
-                <p className="project-name">
-                  {project.name}</p>
-                <p className="project-description">{project.description}</p>
-              </div>
-            ))}
+            <p className="owner-bio">This is the field for the bio. This would describe the user. Lorem ipsum dolor sit amet. Cum optio veniam ad voluptas recusandae 
+              ad provident facilis non laboriosam magni quo provident omnis ut corrupti galisum ut modi inventore. 
+              Sed laudantium vero cum dicta saepe non dolor tempore in corporis officia qui consectetur soluta vel corrupti dolores.</p>
+            {/* Need to add css for owner attributes (smaller) */}
+            <div className="owner-attributes">
+              {currentProject.owner.attributes.map((attribute, index) => (
+                <span key={index} className="owner-attribute-tag">{attribute}</span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -157,9 +154,9 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
           </div>
         </div>
       ) : (
-        <div className="no-profiles-message">
-          <h2>No Profiles Left</h2>
-          <p>Come back later for some more matches!</p>
+        <div className="no-projects-message">
+          <h2>No Projects Left</h2>
+          <p>Come back later for more matches!</p>
         </div>
       )}
     </div>
