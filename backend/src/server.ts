@@ -7,6 +7,7 @@ import session from 'express-session';
 import { mongoStore } from './util/db';
 import passport from 'passport';
 import attributesRouter from './routes/attributes';
+import userRouter from './routes/user';
 import projectRouter from './routes/projects';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
@@ -29,6 +30,7 @@ app.use(sessionMiddleware);
 app.use(passport.authenticate('session'));
 
 app.use("/login", loginRouter);
+app.use("/user", userRouter);
 app.use("/attributes", attributesRouter);
 app.use("/projects", projectRouter);
 app.use("/chat", chatRouter);

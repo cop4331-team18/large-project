@@ -1,5 +1,3 @@
-//adding attributes updated
-
 import express, { Request, Response, Router } from 'express';
 import { attributes, returnWithErrorJson, USER_COLLECTION_NAME } from "../util/constants";
 import { getReqUser } from './login';
@@ -14,11 +12,4 @@ attributesRouter.get("/", async (req: Request, res: Response) => {
     res.status(200).json({attributes: [...attributes]});
 });
 
-interface AttributeBody {
-    attribute: string,
-};
-
-
-
 export default attributesRouter;
-
