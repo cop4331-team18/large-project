@@ -14,6 +14,8 @@ export type User = {
     verificationToken?: string | null,
     attributes: string[],
     projects: ObjectId[],
+    swipeLeft: ObjectId[],
+    swipeRight: ObjectId[],
 }
 
 export type Project = {
@@ -21,7 +23,9 @@ export type Project = {
     attributes: string[],
     description: string,
     createdBy: ObjectId,
-};
+    swipeLeft: ObjectId[],
+    swipeRight: ObjectId[],
+}
 
 export type ChatMessageInput = {
     message: string,

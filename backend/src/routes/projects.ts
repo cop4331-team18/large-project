@@ -70,13 +70,13 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
 
   try {
     //adds new blank project to the project database
-    const insertResult = await db
-      .collection<Project>(PROJECT_COLLECTION_NAME)
-      .insertOne({
+    const insertResult = await db.collection<Project>(PROJECT_COLLECTION_NAME).insertOne({
         name: "New Project",
         attributes: [],
         description: "New Project description",
         createdBy: user._id,
+        swipeLeft: [],
+        swipeRight: [],
       });
 
     //update user with new project document
@@ -261,5 +261,7 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
     returnWithErrorJson(res, "Attribute was not successfully deleted.");
   }
 });
+
+
 
 export default projectRouter;
