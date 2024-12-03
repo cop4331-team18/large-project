@@ -13,14 +13,14 @@ export const chatSocketEvents = (io: Server) => {
             return;
         }
         socket.on("chat", async (data: ChatMessageInput) => {
-            const message: ChatMessage = {
-                message: data.message,
-                project: new ObjectId(data.project),
-                sender: new ObjectId(user._id),
-                createdAt: new Date(),
-                messageType: 'CHAT',
-            };
             try {
+                const message: ChatMessage = {
+                    message: data.message,
+                    project: new ObjectId(data.project),
+                    sender: new ObjectId(user._id),
+                    createdAt: new Date(),
+                    messageType: 'CHAT',
+                };
                 if (!message.project) {
                     return;
                 }

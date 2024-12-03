@@ -47,6 +47,7 @@ const ChatPage: React.FC<ChatProps> = ({
   const [messageInput, setMessageInput] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentChat, setCurrentChat] = useState<string>('');
+  const [isLoadingOldMessages, setIsLoadingOldMessages] = useState<boolean>(false);
 
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
@@ -56,8 +57,8 @@ const ChatPage: React.FC<ChatProps> = ({
     if (socket) {
       if (!socketEvents.has("message-res")) {
         setSocketEvents(prev => prev.add("message-res"));
+        setMessagesResConnectDate(new Date());
         socket.on("messasge-res", (data: ChatMessage) => {
-          setMessagesResConnectDate(new Date());
           setNewMessages(prev => {
             const newMap = new Map(prev);
             const messages: ChatMessage[] = newMap.get(data.project) || [];
@@ -107,6 +108,7 @@ const ChatPage: React.FC<ChatProps> = ({
   };
 
   const loadOldMessages = async() => {
+    setIsLoadingOldMessages(true);
     const pageNum: number = oldMessagesPageNum.get(currentChat) || 0;
     const response = await apiCall.get("/chat/getpage", {
       params: {
@@ -126,6 +128,7 @@ const ChatPage: React.FC<ChatProps> = ({
     });
     setOldMessagesHasNext(prev => prev.set(currentChat, data.hasNext));
     setOldMessagesPageNum(prev => prev.set(currentChat, pageNum+1));
+    setIsLoadingOldMessages(false);
   }
 
   useEffect(() => {
@@ -180,30 +183,31 @@ const ChatPage: React.FC<ChatProps> = ({
               next={loadOldMessages}
               className="infinite-scroll"
               inverse={true}
-              hasMore={oldMessagesHasNext.get(currentChat) === true || oldMessagesHasNext.get(currentChat) === undefined}
-              loader={
-                <div style={{display: "flex", justifyContent: "center", padding: "5px"}}>
-                  <div className="loader"></div>
-                </div>
-              }
+              hasMore={!isLoadingOldMessages && !!currentChat && oldMessagesHasNext.get(currentChat) === true}
+              loader={<></>}
               endMessage={
-                <div>
+                !isLoadingOldMessages && currentChat && <div>
                   <p>This is the beginning of the chat.</p>
                 </div>
               }
               scrollableTarget="message-container"
             >
               {
-                (oldMessages.get(currentChat) || []).map(message => 
-                  <MessageView key={message._id} {...message}/>
+                (oldMessages.get(currentChat) || []).map(message =>
+                  <div key={message._id}>
+                    <MessageView {...message}/>
+                  </div>
                 )
               }
             </InfiniteScroll>
+            {isLoadingOldMessages && <div style={{display: "flex", justifyContent: "center", padding: "5px"}}>
+              <div className="loader"></div>
+            </div>}
           </div>
-          <form className="input-container" onSubmit={sendChatMessage}>
+          {currentChat && <form className="input-container" onSubmit={sendChatMessage}>
             <input type="text" placeholder="Send a message" value={messageInput} onChange={handleMessageInputChange}></input>
             <button onClick={sendChatMessage}>➣</button>
-          </form>
+          </form>}
         </div>
       </div>
     </div>
