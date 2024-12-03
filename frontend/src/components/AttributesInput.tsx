@@ -62,6 +62,12 @@ export const AttributesInput: React.FC<AttributesInputProp> = ({setAttributesLis
                         ...base,
                         fontSize: '14px',
                     }),
+                    control: (base) => ({
+                        ...base,
+                        maxHeight: '80px',
+                        overflowY: 'scroll',
+                        scrollbarWidth: 'thin',
+                    }),
                 }}
             />
         </div>
