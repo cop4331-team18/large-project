@@ -1,4 +1,4 @@
-/* Matching Page */
+/* Matching Page style changes only*/
 .matching-page {
   display: flex;
   flex-direction: column;
@@ -6,7 +6,6 @@
   justify-content: flex-start;
   height: 100vh; /* Full viewport height */
   background-color: #f8f9fa;
-}
 
 /* Profile Card (as Main Container) */
 .profile-card {
@@ -201,28 +200,6 @@ h2 {
   animation: swipeLeft 0.7s ease-out forwards;
 }
 
-/* Keyframe settings */
-@keyframes swipeRight {
-  0% {
-    transform: translateX(0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100%) rotate(10deg);
-    opacity: 0;
-  }
-}
-
-@keyframes swipeLeft {
-  0% {
-    transform: translateX(0), rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-100%) rotate(-10deg);
-    opacity: 0;
-  }
-}
 
 /* Message when no profiles are left */
 .no-profiles-message {
@@ -245,4 +222,33 @@ h2 {
 .no-profiles-message p {
   font-size: 1rem;
   color: #666;
+}
+
+}
+
+
+
+
+
+/* Keyframe settings */
+@keyframes swipeRight {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) rotate(10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeLeft {
+  0% {
+    transform: translateX(0), rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%) rotate(-10deg);
+    opacity: 0;
+  }
 }

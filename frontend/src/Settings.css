@@ -109,4 +109,9 @@
   .save-btn:hover {
     background-color: #f385ff;
   }
+
+  .log-out-btn {
+    background-color: black;
+    color: white;
+  }
 }

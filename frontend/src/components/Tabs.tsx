@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 
 interface TabsPop {
-    chatNotifications: number,
-    currentTab: string,
+    chatNotifications: number;
+    currentTab: string;
 }
 
 const Tabs: React.FC<TabsPop> = ({currentTab, chatNotifications}: TabsPop) => {
@@ -25,7 +25,7 @@ const Tabs: React.FC<TabsPop> = ({currentTab, chatNotifications}: TabsPop) => {
                 <span>Matching</span>
             </div>
             :
-            <div className="tab" onClick={() => navigate("/matching")}>
+            <div className="tab" onClick={() => navigate("/")}>
                 <span>Matching</span>
             </div>}
             {currentTab === "settings" ? 
