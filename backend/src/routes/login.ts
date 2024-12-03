@@ -151,6 +151,8 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
                 verificationToken: verificationToken,
                 attributes: [],
                 projects: [],
+                swipeLeft: [],
+                swipeRight: [],
             });
             const user: WithId<User> = (await db.collection<User>(USER_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
             req.login(user, () => {

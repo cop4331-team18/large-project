@@ -94,3 +94,5 @@ userRouter.post("/user/delete", async (req: Request, res: Response) => {
         returnWithErrorJson(res, "Attribute was not successfully deleted.");
     }
 });
+
+export default userRouter;
