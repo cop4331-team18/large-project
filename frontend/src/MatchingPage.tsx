@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./MatchingPage.css";
 import Tabs from "./components/Tabs";
+import { AttributesInput } from "./components/AttributesInput";
 
 interface Project {
   name: string;
@@ -70,6 +71,11 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
 
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  const [attributesList, setAttributesList] = useState<string[]>([]);
+
+  useEffect(() => {
+    console.log(attributesList);
+  }, [attributesList])
 
   const handleDecision = (decision: "accept" | "reject") => {
     setSwipeDirection(decision === "accept" ? "right" : "left");
@@ -92,6 +98,8 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
   return (
     <div className="matching-page">
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
+
+      <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
 
       {/* Current Profile */}
       {currentProfile ? (
