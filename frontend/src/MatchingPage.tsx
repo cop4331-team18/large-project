@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./MatchingPage.css";
 import Tabs from "./components/Tabs";
-// import { Project, User } from "./types"   This should be edited to import from types.d.ts later
+import { AttributesInput } from "./components/AttributesInput";
 
 // Mock Definitions (until backend connected)
 type ObjectId = string; // placeholder
@@ -64,10 +64,11 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
 
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [attributesList, setAttributesList] = useState<string[]>([]);
 
-  const handleFocus = () => setIsDropdownOpen(true);
-  const handleBlur = () => setTimeout(() => setIsDropdownOpen(false), 200);
+  useEffect(() => {
+    console.log(attributesList);
+  }, [attributesList])
 
   const handleDecision = (decision: "accept" | "reject") => {
     setSwipeDirection(decision === "accept" ? "right" : "left");
@@ -91,33 +92,9 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
     <div className="matching-page">
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
-      {/* Filter section */}
-      <div className="filter-section">
-        <div className="dropdown-search">
-          <input
-            type="text"
-            id="attribute-filter"
-            className="filter-input"
-            placeholder="Filter By Attribute(s)"
-            onFocus={handleFocus}
-            onBlur={handleBlur}
-          />
-          {isDropdownOpen && (
-            <div className="dropdown-options">
-              {/* Placeholders for now */}
-              <div className="dropdown-option">React</div>
-              <div className="dropdown-option">Node.js</div>
-              <div className="dropdown-option">Unity</div>
-              <div className="dropdown-option">Kubernetes</div>
-              <div className="dropdown-option">MongoDB</div>
-              <div className="dropdown-option">Java</div>
-              <div className="dropdown-option">Python</div>
-            </div>
-          )}
-        </div>
-      </div>
+      <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
 
-      {/* Current Project */}
+      {/* Current Profile */}
       {currentProject ? (
         <div 
           key={currentProject.name} 

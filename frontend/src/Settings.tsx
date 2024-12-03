@@ -1,12 +1,14 @@
-import React from "react";
+import React, { FormEvent } from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
+import { apiCall } from "./util/constants";
 
 interface SettingsProp {
   chatNotifications: number;
+  fetchUserStatus: () => Promise<void>;
 }
 
-const SettingsPage: React.FC<SettingsProp> = ({chatNotifications}: SettingsProp) => {
+const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatus}: SettingsProp) => {
   // State to manage user profile data
   // Commented because unused fields causes errors in prod
   // const [username, setUsername] = useState<string>("");
@@ -23,15 +25,30 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications}: SettingsProp)
     // Reset form or navigate away if needed
   };
 
+  const handleLogout = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+        const response = await apiCall.post("/login/logout");
+        if (response.status === 200) {
+            fetchUserStatus();
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
   return (
     <div className="settings-page">
       {/* Tabs */}
       <Tabs chatNotifications={chatNotifications} currentTab="settings"/>
 
+
       {/* Main Settings Content */}
       <div className="settings-container">
         <h1>Account Settings</h1>
 
+      <button className="log-out-btn" onClick={handleLogout}>Log Out</button>
+      
         {/* User Information */}
         <div className="section">
           <h2>User Information</h2>

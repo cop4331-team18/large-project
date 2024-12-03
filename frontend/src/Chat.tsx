@@ -3,7 +3,6 @@ import { Socket } from "socket.io-client";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { apiCall, CHAT_PAGE_SIZE, ChatMessage, ChatMessageInput, getDateString, Project } from "./util/constants";
 import Tabs from "./components/Tabs";
-import { useNavigate } from "react-router-dom";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 interface ChatProps {
@@ -43,7 +42,6 @@ const ChatPage: React.FC<ChatProps> = ({
   messagesResConnectDate,
   setMessagesResConnectDate,
 }: ChatProps) => {
-  const navigate = useNavigate();
   const [messageInput, setMessageInput] = useState<string>('');
   const [projects, setProjects] = useState<Project[]>([]);
   const [currentChat, setCurrentChat] = useState<string>('');
@@ -83,9 +81,7 @@ const ChatPage: React.FC<ChatProps> = ({
   };
 
   useEffect(() => {
-    if (isLoggedIn === false) {
-      navigate("/login");
-    } else if (isLoggedIn === true) {
+    if (isLoggedIn === true) {
       fetchUserProjects();
     }
 }, [isLoggedIn]);

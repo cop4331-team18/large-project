@@ -4,7 +4,7 @@ import { apiCall } from "./util/constants";
 import { useNavigate } from "react-router-dom";
 
 interface AuthFormProps {
-  fetchUserStatus: () => void,
+  fetchUserStatus: () => Promise<void>,
   isLoggedIn: boolean | null,
 }
 
@@ -21,7 +21,7 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate("/matching");
+      navigate("/");
     }
   }, [isLoggedIn]);
 
@@ -33,8 +33,6 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
         password,
       });
       if (response.status === 200) {
-        // alert("Login successful!"); // TODO: delete after
-        navigate("/matching");
         fetchUserStatus();
       }
     } catch (error) {
