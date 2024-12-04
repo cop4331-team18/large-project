@@ -12,7 +12,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({chatNotifications}: ProjectsProp
         <Tabs currentTab="projects" chatNotifications={chatNotifications}/>
         
         <div className="projects-container"> 
-          <h1>Project Management</h1>
+          <h1>Create Project</h1>
 
           <div className="section">
             <div className="form-row">
@@ -24,14 +24,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({chatNotifications}: ProjectsProp
                   placeholder="Project Name"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="project-languages">Languages</label>
-                <input
-                  id="project-languages"
-                  type="text"
-                  placeholder="Project Languages"
-                />
-              </div>
+          
             </div>
             <div className="form-group">
               <label htmlFor="project-description">Description</label>
@@ -40,6 +33,22 @@ const ProjectsPage: React.FC<ProjectsProps> = ({chatNotifications}: ProjectsProp
                 placeholder="Project Description"
               />
             </div>
+            <div className="section">
+          <h3>Languages</h3>
+          <select multiple>
+            <option value="JavaScript">JavaScript</option> {/*placeholder for atributes, lmk if this needs change -dylan */}
+            <option value="Python">Python</option>
+            <option value="Java">Java</option>
+            <option value="C++">C++</option>
+            <option value="Ruby">Ruby</option>
+          </select>
+        </div>
+          </div> {/*used for creation of project on project page  */}
+          <div className="create-project">  
+            <button className="create-btn" > {/*onClick=  */}
+              Create Project
+            </button>
+
           </div>
         </div>
       </div>

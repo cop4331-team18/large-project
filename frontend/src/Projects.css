@@ -52,10 +52,17 @@ header h1 {
     margin-bottom: 20px;
   }
 
+  h3{
+    font-size: .9rem;
+    color: #888; /*used for languages input in create project */
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
   .form-row {
     display: flex;
     gap: 50px;
-    margin-bottom: 20px; /* Add spacing between rows */
+    margin-bottom: 30px; /* Add spacing between rows */
   }
   
   .form-group {
@@ -69,5 +76,27 @@ header h1 {
     display: block;
     margin-bottom: 5px;
     text-align: left; /* Aligns the label to the right */
+  }
+
+  textarea,
+  input,
+  select {
+    width: 100%;
+    padding: 17px 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    background-color: #f9f9f9; /* Matches the style of the example */
+    color: #333;
+    box-sizing: border-box;
+  }
+
+  .create-btn {
+    background-color: #f3ebf5;
+    color: black;
+  }
+  .create-btn:hover {
+    background-color: #f7d1ff;
+    color: black;
   }
 }
