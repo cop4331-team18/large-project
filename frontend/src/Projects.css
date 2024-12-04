@@ -25,6 +25,49 @@ header h1 {
 } */
 
 .projects-page {
-    margin-top: 35px;
-    
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
+  
+  .projects-container {
+    width: 90%; /* Takes up 90% of the screen width */
+    max-width: 700px;
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    max-width: 90%; 
+  }
+
+  .section {
+    margin-bottom: 40px;
+  }
+
+  h1 {
+    margin-bottom: 20px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 50px;
+    margin-bottom: 20px; /* Add spacing between rows */
+  }
+  
+  .form-group {
+    flex: 1;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #888; /* Light gray color for subsection headings */
+    display: block;
+    margin-bottom: 5px;
+    text-align: left; /* Aligns the label to the right */
+  }
 }
