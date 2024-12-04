@@ -21,6 +21,11 @@ interface GetMatchOptionsParams {
   pageSize: string;
 }
 
+interface GetMatchOptionsResponse {
+  hasNext: boolean;
+  projects: WithId<Project>[];
+}
+
 interface UpdateProject {
   id: string;
   name: string;
@@ -101,8 +106,17 @@ projectRouter.get("/get-match-options", async (req: Request, res: Response) => {
     if (params.attributes && params.attributes.length > 0) {
       filter.attributes = {$all: params.attributes}
     };
-    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).find(filter, {limit: pageSize}).toArray();
-    res.status(200).send({projects: page});
+    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).find(filter, {limit: pageSize+1}).toArray();
+    let hasNext = false;
+    if (page.length === pageSize+1) {
+      hasNext = true;
+      page.pop();
+    }
+    const resJson: GetMatchOptionsResponse = {
+      hasNext: hasNext,
+      projects: page,
+    };
+    res.status(200).send(resJson);
   } catch (error) {
     console.log(error);
     returnWithErrorJson(res, "Error occurred");
