@@ -173,6 +173,14 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
         $pull: {swipeRight: project._id}
       });
     }
+
+    //pull all Ids from acceptedUsers
+    for (const idOfAcceptedUser of project.acceptedUsers) {
+      await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+        { _id: new ObjectId(idOfAcceptedUser) },
+        { $pull: {acceptedUsers : idOfAcceptedUser} }
+      )
+    }
     
     //updates the user by removing the pID
     await db
@@ -491,15 +499,12 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
     //add check to see if they had swiped already
     const checkSwipe = await db.collection<User>(USER_COLLECTION_NAME).findOne({
       _id : new ObjectId(body.collaborator),
-      $or : [
-        { swipeLeft : new ObjectId(body.projectId)},
-        { swipeRight : new ObjectId(body.projectId)}
-      ],
+      swipeLeft : new ObjectId(body.projectId),
     });
 
     if(checkSwipe) {
-      if(checkSwipe.swipeLeft.find(val => val.equals(new ObjectId(body.projectId))))
-        returnWithErrorJson(res, "The user collaborator swiped left on this project, not right");
+      returnWithErrorJson(res, "The collaborator swiped left on this project, not right");
+      return;
     }
 
     //add check to see if they are already a collaborator on the project or if they have been rejected
@@ -513,29 +518,41 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
     });
 
     if(checkAcceptance) {
-      if(checkAcceptance.acceptedUsers.find(val => val.equals(new ObjectId(body.collaborator))))
-        returnWithErrorJson(res, "The user has already been accepted");
-      if(checkAcceptance.rejectedUsers.find(val => val.equals(new ObjectId(body.collaborator))))
-        returnWithErrorJson(res, "The user has already been rejected");
+      returnWithErrorJson(res, "Collaborator has been accepted or rejected already");
+      return;
+    } 
+    
+
+    //adds collaborator to the project
+    const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { acceptedUsers: new ObjectId(body.collaborator) } }
+    );
+
+    //once accepted, this wil update the Collaborators profile to show that it joined
+    const joinedProject = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.collaborator) },
+      { $addToSet : { joinedProjects: new ObjectId(body.projectId) } }
+    );
+
+    if (acceptUser.modifiedCount === 1 && joinedProject.modifiedCount === 1) {
+      res.status(200).json({ message: "Successfully added collaborator to project" });
+      return;
+    } else {
+      returnWithErrorJson(res, "Collaborator was not successfully added");
+      return;
     }
+
+
   } catch (error) {
     console.error(error);
+
   }
 
-  //adds collaborator to the project
-  const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
-    { _id : new ObjectId(body.projectId) },
-    { $addToSet : { acceptedUsers: new ObjectId(body.collaborator) } }
-  );
-
-  //once accepted, this wil update the Collaborators profile to show that it joined
-  const joinedProject = await db.collection<User>(PROJECT_COLLECTION_NAME).updateOne(
-    { _id : user._id },
-    { $addToSet : { joinedProjects: new ObjectId(body.projectId)}}
-  );
-
+  
 });
 
+//rejecting a user request from a project
 projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
   const body: Accept = req.body;
   const user: WithId<User> | null = await getReqUser(req);
@@ -556,15 +573,12 @@ projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
     //add check to see if they had swiped already
     const checkSwipe = await db.collection<User>(USER_COLLECTION_NAME).findOne({
       _id : new ObjectId(body.collaborator),
-      $or : [
-        { swipeLeft : new ObjectId(body.projectId)},
-        { swipeRight : new ObjectId(body.projectId)}
-      ],
+      swipeLeft : new ObjectId(body.projectId),
     });
 
     if(checkSwipe) {
-      if(checkSwipe.swipeLeft.find(val => val.equals(new ObjectId(body.projectId))))
-        returnWithErrorJson(res, "The user collaborator swiped left on this project, not right");
+      returnWithErrorJson(res, "The collaborator swiped left on this project, not right");
+      return;
     }
 
     //add check to see if they are already a collaborator on the project or if they have been rejected
@@ -578,29 +592,31 @@ projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
     });
 
     if(checkAcceptance) {
-      if(checkAcceptance.acceptedUsers.find(val => val.equals(new ObjectId(body.collaborator))))
-        returnWithErrorJson(res, "The user has already been accepted");
-      if(checkAcceptance.rejectedUsers.find(val => val.equals(new ObjectId(body.collaborator))))
-        returnWithErrorJson(res, "The user has already been rejected");
+      returnWithErrorJson(res, "Collaborator has been accepted or rejected already");
+      return;
+    } 
+    
+
+    //rejects collaborator from project
+    const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { rejectedUsers: new ObjectId(body.collaborator) } }
+    );
+
+    if (acceptUser.modifiedCount === 1) {
+      res.status(200).json({ message: "Successfully rejected collaborator from project" });
+      return;
+    } else {
+      returnWithErrorJson(res, "Collaborator was not successfully rejected");
+      return;
     }
+
+
   } catch (error) {
     console.error(error);
   }
-
-  //adds collaborator to the project
-  const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
-    { _id : new ObjectId(body.projectId) },
-    { $addToSet : { rejectedUsers: new ObjectId(body.collaborator) } }
-  );
-
-  /*
-  //once accepted, this wil update the Collaborators profile to show that it joined
-  const joinedProject = await db.collection<User>(PROJECT_COLLECTION_NAME).updateOne(
-    { _id : user._id },
-    { $addToSet : { joinedProjects: new ObjectId(body.projectId)}}
-  );
-  */
 });
+
 export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
   try {
     if (!projectId) {
