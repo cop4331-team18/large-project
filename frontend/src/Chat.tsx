@@ -97,10 +97,24 @@ const ChatPage: React.FC<ChatProps> = ({
         setSocketEvents(prev => prev.add("message-res"));
         socket.on("message-res", async (data: ChatMessage) => {
           if (data.messageType === 'CREATE') {
+            setOldMessagesViewDate(prev => new Map(prev).set(data._id, new Date()));
             await fetchUserProjects();
-            return; // Play around with this and make sure this always works
           } else if (data.messageType === 'UPDATE') {
             await fetchUserProjects();
+          } else if (data.messageType === 'DELETE') {
+            if (currentChat === data.project) {
+              setCurrentChat('');
+            }
+            setProjects(prev => {
+              const newProjects = [];
+              for (const project of prev) {
+                if (project._id !== data.project) {
+                  newProjects.push(project);
+                }
+              }
+              return newProjects;
+            });
+            return; // Play around with this and make sure this always works
           }
           setNewMessages(prev => {
             const newMap = new Map(prev);
@@ -108,6 +122,16 @@ const ChatPage: React.FC<ChatProps> = ({
             newMap.set(data.project, [data, ...messages]);
             return newMap;
           });
+          if (data.messageType !== 'READ') {
+            setProjects(prev => {
+              const copy = [...prev];
+              const updateProject = copy.find(val => val._id === data.project);
+              if (updateProject) {
+                updateProject.lastMessageAt = data.createdAt;
+              }
+              return copy;
+            })
+          }
         });
       }
     }
@@ -122,7 +146,7 @@ const ChatPage: React.FC<ChatProps> = ({
         }
       }
     }
-  }, [socket, currentChat]);
+  }, [socket, currentChat, projects, socketEvents, oldMessagesViewDate]);
 
   const fetchUserProjects = async() => {
     const response = await apiCall.get(`/projects/get`);
@@ -146,7 +170,21 @@ const ChatPage: React.FC<ChatProps> = ({
     if (isLoggedIn === true) {
       fetchUserProjects();
     }
-}, [isLoggedIn]);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    let isSorted: boolean = true;
+    for (let i = 0; i < projects.length-1; ++i) {
+      if (projects[i].lastMessageAt.localeCompare(projects[i+1].lastMessageAt) < 0) {
+        isSorted = false;
+      }
+    }
+    if (!isSorted) {
+      setProjects(prev => {
+        return [...prev].sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+      });
+    }
+  }, [projects]);
 
   const sendChatMessage = (e: FormEvent) => {
     e.preventDefault();

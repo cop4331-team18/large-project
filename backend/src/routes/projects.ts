@@ -30,6 +30,11 @@ interface Swipe {
   projectId: string,
 }
 
+interface Accept {
+  projectId: string,
+  collaborator: string,
+}
+
 projectRouter.get("/get", async (req: Request, res: Response) => {
   const user: WithId<User> | null = await getReqUser(req);
 
@@ -83,6 +88,8 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         createdBy: user._id,
         swipeLeft: [],
         swipeRight: [],
+        acceptedUsers: [],
+        rejectedUsers: [],
         lastReadAt: [],
         lastMessageAt: new Date(),
       });
@@ -166,6 +173,14 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
         $pull: {swipeRight: project._id}
       });
     }
+
+    //pull all Ids from acceptedUsers
+    for (const idOfAcceptedUser of project.acceptedUsers) {
+      await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+        { _id: new ObjectId(idOfAcceptedUser) },
+        { $pull: {acceptedUsers : idOfAcceptedUser} }
+      )
+    }
     
     //updates the user by removing the pID
     await db
@@ -179,10 +194,19 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
       }
     );
     
+    // This is just for anyone who had this project loaded up already, this will delete the project for them automatically.
+    const deleteProjectMessage: ChatMessage = {
+      message: `Project was deleted by @${user.username}`,
+      project: new ObjectId(projectId),
+      sender: user._id,
+      createdAt: new Date(),
+      messageType: 'DELETE',
+    };
+    await sendToAllMembers(new ObjectId(projectId), await saveMessageToDatabase(deleteProjectMessage), io);
     await db.collection<Project>(PROJECT_COLLECTION_NAME).deleteOne({
-        _id: new ObjectId(projectId),
-        createdBy: user._id,
-      });
+      _id: new ObjectId(projectId),
+      createdBy: user._id,
+    });
     res.status(200).json({
       message: "Project deleted successfully.",
     });
@@ -218,7 +242,7 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
         },
         { $set: { name: body.name, description: body.description } }
       );
-      
+
     const updateProjectMessage: ChatMessage = {
       message: `Project was updated by @${user.username}`,
       project: new ObjectId(body.id),
@@ -424,13 +448,13 @@ projectRouter.post("/swipeRight", async (req: Request, res: Response) => {
       return;
     }
 
-
-    
+    //check if user already swiped left
     if(user.swipeLeft.find(val => val.equals(new ObjectId(body.projectId)))) {
       returnWithErrorJson(res, "The user has already swiped left on this project");
       return;
     }
 
+    //check if user already swiped right
     if(user.swipeRight.find(val => val.equals(new ObjectId(body.projectId)))) {
       returnWithErrorJson(res, "The user has already swiped right on this project");
       return;
@@ -462,6 +486,146 @@ projectRouter.post("/swipeRight", async (req: Request, res: Response) => {
     return;
   }
 });
+
+//Allows user to accept others onto their project
+projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
+  const body: Accept = req.body;
+  const user: WithId<User> | null = await getReqUser(req);
+
+  if (!user || !body.projectId || !body.collaborator) {
+    returnWithErrorJson(res, "User and project id are required");
+    return;
+  }
+
+   //check if user has verified email
+   if (!user.isVerified) {
+    returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  try {
+
+    //add check to see if they had swiped already
+    const checkSwipe = await db.collection<User>(USER_COLLECTION_NAME).findOne({
+      _id : new ObjectId(body.collaborator),
+      swipeLeft : new ObjectId(body.projectId),
+    });
+
+    if(checkSwipe) {
+      returnWithErrorJson(res, "The collaborator swiped left on this project, not right");
+      return;
+    }
+
+    //add check to see if they are already a collaborator on the project or if they have been rejected
+    const checkAcceptance = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+       _id : new ObjectId(body.projectId),
+
+       $or : [
+        { acceptedUsers : new ObjectId(body.collaborator) },
+        { rejectedUsers : new ObjectId(body.collaborator) }
+       ],
+    });
+
+    if(checkAcceptance) {
+      returnWithErrorJson(res, "Collaborator has been accepted or rejected already");
+      return;
+    } 
+    
+
+    //adds collaborator to the project
+    const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { acceptedUsers: new ObjectId(body.collaborator) } }
+    );
+
+    //once accepted, this wil update the Collaborators profile to show that it joined
+    const joinedProject = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.collaborator) },
+      { $addToSet : { joinedProjects: new ObjectId(body.projectId) } }
+    );
+
+    if (acceptUser.modifiedCount === 1 && joinedProject.modifiedCount === 1) {
+      res.status(200).json({ message: "Successfully added collaborator to project" });
+      return;
+    } else {
+      returnWithErrorJson(res, "Collaborator was not successfully added");
+      return;
+    }
+
+
+  } catch (error) {
+    console.error(error);
+
+  }
+
+  
+});
+
+//rejecting a user request from a project
+projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
+  const body: Accept = req.body;
+  const user: WithId<User> | null = await getReqUser(req);
+
+  if (!user || !body.projectId || !body.collaborator) {
+    returnWithErrorJson(res, "User and project id are required");
+    return;
+  }
+
+   //check if user has verified email
+   if (!user.isVerified) {
+    returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  try {
+
+    //add check to see if they had swiped already
+    const checkSwipe = await db.collection<User>(USER_COLLECTION_NAME).findOne({
+      _id : new ObjectId(body.collaborator),
+      swipeLeft : new ObjectId(body.projectId),
+    });
+
+    if(checkSwipe) {
+      returnWithErrorJson(res, "The collaborator swiped left on this project, not right");
+      return;
+    }
+
+    //add check to see if they are already a collaborator on the project or if they have been rejected
+    const checkAcceptance = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+       _id : new ObjectId(body.projectId),
+
+       $or : [
+        { acceptedUsers : new ObjectId(body.collaborator) },
+        { rejectedUsers : new ObjectId(body.collaborator) }
+       ],
+    });
+
+    if(checkAcceptance) {
+      returnWithErrorJson(res, "Collaborator has been accepted or rejected already");
+      return;
+    } 
+    
+
+    //rejects collaborator from project
+    const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { rejectedUsers: new ObjectId(body.collaborator) } }
+    );
+
+    if (acceptUser.modifiedCount === 1) {
+      res.status(200).json({ message: "Successfully rejected collaborator from project" });
+      return;
+    } else {
+      returnWithErrorJson(res, "Collaborator was not successfully rejected");
+      return;
+    }
+
+
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
   try {
     if (!projectId) {
