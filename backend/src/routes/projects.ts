@@ -6,6 +6,7 @@ import {
   returnWithErrorJson,
   USER_COLLECTION_NAME,
   PROJECT_COLLECTION_NAME,
+  returnWithOKJson,
 } from "../util/constants";
 import { getReqUser } from "./login";
 import { WithId, ObjectId, Filter } from "mongodb";
@@ -682,6 +683,36 @@ projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
     console.error(error);
   }
 });
+
+projectRouter.post("/undo-all-left-swipes", async (req: Request, res: Response) => {
+  const user: WithId<User> | null = await getReqUser(req);
+
+  if (!user) {
+    returnWithErrorJson(res, "User is required");
+    return;
+  }
+
+   //check if user has verified email
+   if (!user.isVerified) {
+    returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  try {
+
+    for (const projectId of user.swipeLeft) {
+      await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: projectId}, {$pull: {swipeLeft: user._id}});
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne({_id: user._id}, {$pull: {swipeLeft: projectId}});
+    }
+    returnWithOKJson(res);
+
+  } catch (error) {
+    console.error(error);
+    returnWithErrorJson(res, "Server error");
+  }
+});
+
+
 
 export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
   try {
