@@ -1,3 +1,27 @@
+/* Key frames */
+@keyframes swipeRight {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) rotate(10deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeLeft {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%) rotate(-10deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+
 /* Matching Page style changes only*/
 .matching-page {
   display: flex;
@@ -5,7 +29,7 @@
   align-items: center;
   justify-content: flex-start;
   height: 100vh; /* Full viewport height */
-}
+
 /* Profile Card (as Main Container) */
 .project-card {
   width: 100%;
@@ -239,30 +263,6 @@ h2 {
 .swipe-left {
   animation: swipeLeft 0.7s ease-out forwards;
 }
-
-/* Key frames */
-@keyframes swipeRight {
-  0% {
-    transform: translateX(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100%) rotate(10deg) scale(0.9);
-    opacity: 0;
-  }
-}
-
-@keyframes swipeLeft {
-  0% {
-    transform: translateX(0) rotate(0deg) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(-100%) rotate(-10deg) scale(0.9);
-    opacity: 0;
-  }
-}
-
 /* Message when no profiles are left */
 .no-projects-message {
   font-family: Georgia, 'Times New Roman', Times, serif;
@@ -352,4 +352,12 @@ h2 {
 .dropdown-option:hover {
   background-color: #007acc;
   color: #fff;
+}
+
+.matching-username-text {
+  font-style: italic;
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
 }
