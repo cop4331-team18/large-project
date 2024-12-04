@@ -11,8 +11,14 @@ interface AttributeBody {
     attribute: string,
 };
 
+interface UpdateUserBody {
+    firstName : string;
+    lastName : string;
+    bio: string;
+}
+
 //adding the attribute to the user
-userRouter.post("/user/add", async (req: Request, res: Response) => {
+userRouter.post("/attribute/add", async (req: Request, res: Response) => {
     
     try{
         const  body: AttributeBody = req.body;
@@ -54,7 +60,7 @@ userRouter.post("/user/add", async (req: Request, res: Response) => {
     }
 });
 
-userRouter.post("/user/delete", async (req: Request, res: Response) => {
+userRouter.post("/attribute/delete", async (req: Request, res: Response) => {
     try{
         const body: AttributeBody = req.body;
         const user: WithId<User> | null = await getReqUser(req);
@@ -94,5 +100,40 @@ userRouter.post("/user/delete", async (req: Request, res: Response) => {
         returnWithErrorJson(res, "Attribute was not successfully deleted.");
     }
 });
+
+
+userRouter.post("/update", async (req: Request, res: Response) => {
+    const user: WithId<User> | null = await getReqUser(req);
+    const body: UpdateUserBody = req.body;
+  
+    if (!user) {
+      returnWithErrorJson(res, "User is required.");
+      return;
+    }
+  
+    //check if user has verified email
+    if (!user.isVerified) {
+      returnWithErrorJson(res, "User email is not verified.");
+      return;
+    }
+  
+    try {
+      //body: name, description
+      await db
+        .collection<User>(USER_COLLECTION_NAME)
+        .updateOne({ 
+            _id: user._id,
+          },
+          { $set: { firstName: body.firstName, lastName: body.lastName, bio: body.bio } }
+        );
+  
+      res.status(200).json({
+        message: "User updated successfully.",
+      });
+    } catch (error) {
+      console.error(error);
+      returnWithErrorJson(res, "Error updating User.");
+    }
+  });
 
 export default userRouter;

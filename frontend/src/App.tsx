@@ -4,6 +4,7 @@ import AuthForm from './AuthForm';
 import MatchingPage from './MatchingPage';
 import ChatPage from './Chat';
 import SettingsPage from './Settings';
+import ProjectsPage from './Projects';
 import { apiCall, ChatMessage, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
 import "./App.css"
@@ -119,6 +120,11 @@ function App() {
           <Route path="/settings" element={
             <SettingsPage chatNotifications={chatNotifications} fetchUserStatus={fetchUserStatus}/>
           } />
+
+          <Route
+            path="/projects"element={
+            <ProjectsPage chatNotifications={chatNotifications}/>}
+          />
 
           <Route path="*" element={
             <Navigate to="/" replace />

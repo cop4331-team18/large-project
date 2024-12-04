@@ -24,6 +24,10 @@ interface ProjectAttribute {
   attribute: string;
 }
 
+interface Swipe {
+  projectId: string,
+}
+
 projectRouter.get("/get", async (req: Request, res: Response) => {
   const user: WithId<User> | null = await getReqUser(req);
 
@@ -49,7 +53,7 @@ projectRouter.get("/get", async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    returnWithErrorJson(res, "Error creating empty project.");
+    returnWithErrorJson(res, "Error finding project");
   }
 });
 
@@ -240,14 +244,12 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
     }
 
     //update the user with the attribute
-    const updateResult = await db
-      .collection<Project>(PROJECT_COLLECTION_NAME)
-      .updateOne({ 
+    const updateResult = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({ 
           _id: new ObjectId(body.id),
           createdBy: user._id,
         },
         { $pull: { attributes: body.attribute } }
-      );
+    );
 
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
@@ -263,6 +265,128 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
   }
 });
 
+projectRouter.post("/swipeLeft", async (req: Request, res: Response) => {
+
+  const body: Swipe = req.body;
+  const user: WithId<User> | null = await getReqUser(req);
+
+  if (!user || !body.projectId) {
+    returnWithErrorJson(res, "User and project id are required");
+    return;
+  }
+
+   //check if user has verified email
+   if (!user.isVerified) {
+    returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  try {
+    
+    //checks if user was the one that made the project
+    if(user.projects.find(val => val.equals(new ObjectId(body.projectId)))){
+      returnWithErrorJson(res, "the user is the one that made this project");
+      return;
+    }
+
+    if(user.swipeLeft.find(val => val.equals(new ObjectId(body.projectId)))) {
+      returnWithErrorJson(res, "The user has already swiped left on this project");
+      return;
+    }
+
+    if(user.swipeRight.find(val => val.equals(new ObjectId(body.projectId)))) {
+      returnWithErrorJson(res, "The user has already swiped right on this project");
+      return;
+    }
+
+  } catch (error) {
+    console.error("the value is not in one of the arrays", error);
+  }
+  
+
+  //adds user id to swipeLeft on projects
+  const updateProjectSwipe = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { swipeLeft: new ObjectId(user._id) } }
+  );
+  
+  //adds projectId to swipeLeft on user
+  const updateUserSwipe = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
+    { _id : user._id },
+    { $addToSet : { swipeLeft: new ObjectId(body.projectId) } }
+  );
+
+
+  if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
+    res.status(200).json({ message: "Added Swipe to Project" });
+    return;
+  } else {
+    returnWithErrorJson(res, "Project Swipe was not successfully added.");
+    return;
+  }
+});
+
+projectRouter.post("/swipeRight", async (req: Request, res: Response) => {
+
+  const body: Swipe = req.body;
+  const user: WithId<User> | null = await getReqUser(req);
+
+  if (!user || !body.projectId) {
+    returnWithErrorJson(res, "User and project id are required");
+    return;
+  }
+
+   //check if user has verified email
+   if (!user.isVerified) {
+    returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  try {
+    //checks if user was the one that made the project
+    if(user.projects.find(val => val.equals(new ObjectId(body.projectId)))){
+      returnWithErrorJson(res, "the user is the one that made this project");
+      return;
+    }
+
+
+    
+    if(user.swipeLeft.find(val => val.equals(new ObjectId(body.projectId)))) {
+      returnWithErrorJson(res, "The user has already swiped left on this project");
+      return;
+    }
+
+    if(user.swipeRight.find(val => val.equals(new ObjectId(body.projectId)))) {
+      returnWithErrorJson(res, "The user has already swiped right on this project");
+      return;
+    }
+    
+  } catch (error) {
+    console.error("the value is not in one of the arrays", error);
+  }
+  
+
+  //adds user id to swipeRight on projects
+  const updateProjectSwipe = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { swipeRight: new ObjectId(user._id) } }
+  );
+  
+  //adds projectId to swipeRight on user
+  const updateUserSwipe = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
+    { _id : user._id },
+    { $addToSet : { swipeRight: new ObjectId(body.projectId) } }
+  );
+
+
+  if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
+    res.status(200).json({ message: "Added Swipe to Project" });
+    return;
+  } else {
+    returnWithErrorJson(res, "Project Swipe was not successfully added.");
+    return;
+  }
+});
 export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
   try {
     if (!projectId) {

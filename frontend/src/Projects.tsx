@@ -1,14 +1,22 @@
 import React from "react";
 import "./Projects.css"
+import Tabs from "./components/Tabs";
 
-const Projects: React.FC = () => {
+interface ProjectsProps {
+  chatNotifications: number;
+}
+const ProjectsPage: React.FC<ProjectsProps> = ({chatNotifications}: ProjectsProps) =>  {
   return (
     <div>
-      <header>
-        <h1>Project Management</h1>
-      </header>
+      <div className="projects-page">
+        {/* Tabs */}
+        <Tabs currentTab="projects" chatNotifications={chatNotifications}/>
+        <header>
+          <h1>Project Management</h1>
+        </header>
+      </div>
     </div>
   );
 };
 
-export default Projects;
+export default ProjectsPage;

@@ -9,11 +9,13 @@ export type User = {
     salt: string,
     firstName: string,
     lastName: string,
+    bio: string,
     joinedAt: Date,
     isVerified: boolean,
     verificationToken?: string | null,
     attributes: string[],
-    projects: ObjectId[],
+    projects: ObjectId[],                //this is the projects the user created
+    joinedProjects: ObjectId[],          //this is the projects the user has joined
     swipeLeft: ObjectId[],
     swipeRight: ObjectId[],
 }
