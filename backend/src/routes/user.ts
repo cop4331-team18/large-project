@@ -164,8 +164,9 @@ userRouter.get("/:id", async (req: Request, res: Response) => {
             delete resUser.verificationToken;
             resUser.email = '';
             res.status(200).send({user: resUser});
+        } else {
+            returnWithErrorJson(res, "User not found.");
         }
-        returnWithErrorJson(res, "User not found.");
     } catch (error) {
         returnWithErrorJson(res, "Error finding user.")
     }

@@ -69,7 +69,7 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
     } catch (error) {
       console.log(error);
     }
-  };
+    };
 
   // Input Handlers
   const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) =>
@@ -78,6 +78,19 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
     setLastName(e.target.value);
   const handleBioChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
     setBio(e.target.value);
+
+  const handleUndoAllLeftSwipes = async(e: FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await apiCall.post("/projects/undo-all-left-swipes");
+      if (response.status === 200) {
+        alert("Success!");
+        fetchUserStatus();
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <div className="settings-page">
@@ -164,6 +177,9 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
             <button className="log-out-btn" onClick={handleLogout}>
               Log Out
             </button>
+            <button className="undo-btn" onClick={handleUndoAllLeftSwipes}>
+              Undo all Left Swipes
+              </button>
           </div>
 
           {/* Cancel and Save Buttons */}

@@ -6,6 +6,7 @@ import {
   returnWithErrorJson,
   USER_COLLECTION_NAME,
   PROJECT_COLLECTION_NAME,
+  returnWithOKJson,
 } from "../util/constants";
 import { getReqUser } from "./login";
 import { WithId, ObjectId, Filter } from "mongodb";
@@ -19,6 +20,11 @@ export const projectRouter: Router = express.Router();
 interface GetMatchOptionsParams {
   attributes: string[];
   pageSize: string;
+}
+
+interface GetMatchOptionsResponse {
+  hasNext: boolean;
+  projects: WithId<Project>[];
 }
 
 interface UpdateProject {
@@ -58,7 +64,13 @@ projectRouter.get("/get", async (req: Request, res: Response) => {
   try {
     const results: WithId<Project>[] | null = await db
       .collection<Project>(PROJECT_COLLECTION_NAME)
-      .find({ createdBy: new ObjectId(user._id) })
+      .find(
+        {
+          $or: [
+            {createdBy: new ObjectId(user._id)},
+            {acceptedUsers: {$in: [user._id]}},
+          ],
+      })
       .toArray();
 
     res.status(200).json({
@@ -101,8 +113,17 @@ projectRouter.get("/get-match-options", async (req: Request, res: Response) => {
     if (params.attributes && params.attributes.length > 0) {
       filter.attributes = {$all: params.attributes}
     };
-    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).find(filter, {limit: pageSize}).toArray();
-    res.status(200).send({projects: page});
+    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).find(filter, {limit: pageSize+1}).toArray();
+    let hasNext = false;
+    if (page.length === pageSize+1) {
+      hasNext = true;
+      page.pop();
+    }
+    const resJson: GetMatchOptionsResponse = {
+      hasNext: hasNext,
+      projects: page,
+    };
+    res.status(200).send(resJson);
   } catch (error) {
     console.log(error);
     returnWithErrorJson(res, "Error occurred");
@@ -221,9 +242,9 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
 
     //pull all Ids from acceptedUsers
     for (const idOfAcceptedUser of project.acceptedUsers) {
-      await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne(
         { _id: new ObjectId(idOfAcceptedUser) },
-        { $pull: {acceptedUsers : idOfAcceptedUser} }
+        { $pull: {joinedProjects: project._id} }
       )
     }
     
@@ -279,6 +300,10 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
 
   try {
     //body: name, description
+    if (!user.projects.find(val => val.equals(new ObjectId(body.id)))) {
+      returnWithErrorJson(res, "Only project creator can update project");
+      return;
+    }
     await db
       .collection<Project>(PROJECT_COLLECTION_NAME)
       .updateOne({ 
@@ -517,6 +542,15 @@ projectRouter.post("/swipeRight", async (req: Request, res: Response) => {
   
   
     if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
+      const swipeRightUserMessage: ChatMessage = {
+        message: `${user.username} swiped right on the project`,
+        project: new ObjectId(body.projectId),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'SWIPE_RIGHT',
+      };
+  
+      await sendToAllMembers(new ObjectId(body.projectId), await saveMessageToDatabase(swipeRightUserMessage), io);
       res.status(200).json({ message: "Added Swipe to Project" });
       return;
     } else {
@@ -549,13 +583,22 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
   try {
 
     //add check to see if they had swiped already
-    const checkSwipe = await db.collection<User>(USER_COLLECTION_NAME).findOne({
+    const collaboratorUser = await db.collection<User>(USER_COLLECTION_NAME).findOne({
       _id : new ObjectId(body.collaborator),
-      swipeLeft : new ObjectId(body.projectId),
     });
 
-    if(checkSwipe) {
+    if (!collaboratorUser) {
+      returnWithErrorJson(res, 'User does not exist');
+      return;
+    }
+
+    if(collaboratorUser.swipeLeft.find(val => val.equals(new ObjectId(body.projectId)))) {
       returnWithErrorJson(res, "The collaborator swiped left on this project, not right");
+      return;
+    }
+
+    if(!collaboratorUser.swipeRight.find(val => val.equals(new ObjectId(body.projectId)))) {
+      returnWithErrorJson(res, "The collaborator did not swipe right");
       return;
     }
 
@@ -588,6 +631,15 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
     );
 
     if (acceptUser.modifiedCount === 1 && joinedProject.modifiedCount === 1) {
+      const acceptUserMessage: ChatMessage = {
+        message: `${user.username} added ${collaboratorUser.username} to the project`,
+        project: new ObjectId(body.projectId),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'ACCEPT_USER',
+      };
+  
+      await sendToAllMembers(new ObjectId(body.projectId), await saveMessageToDatabase(acceptUserMessage), io);
       res.status(200).json({ message: "Successfully added collaborator to project" });
       return;
     } else {
@@ -623,13 +675,22 @@ projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
   try {
 
     //add check to see if they had swiped already
-    const checkSwipe = await db.collection<User>(USER_COLLECTION_NAME).findOne({
+    const collaboratorUser = await db.collection<User>(USER_COLLECTION_NAME).findOne({
       _id : new ObjectId(body.collaborator),
-      swipeLeft : new ObjectId(body.projectId),
     });
 
-    if(checkSwipe) {
+    if (!collaboratorUser) {
+      returnWithErrorJson(res, 'User does not exist');
+      return;
+    }
+
+    if(collaboratorUser.swipeLeft.find(val => val.equals(new ObjectId(body.projectId)))) {
       returnWithErrorJson(res, "The collaborator swiped left on this project, not right");
+      return;
+    }
+
+    if(!collaboratorUser.swipeRight.find(val => val.equals(new ObjectId(body.projectId)))) {
+      returnWithErrorJson(res, "The collaborator did not swipe right");
       return;
     }
 
@@ -669,6 +730,36 @@ projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
   }
 });
 
+projectRouter.post("/undo-all-left-swipes", async (req: Request, res: Response) => {
+  const user: WithId<User> | null = await getReqUser(req);
+
+  if (!user) {
+    returnWithErrorJson(res, "User is required");
+    return;
+  }
+
+   //check if user has verified email
+   if (!user.isVerified) {
+    returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  try {
+
+    for (const projectId of user.swipeLeft) {
+      await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: projectId}, {$pull: {swipeLeft: user._id}});
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne({_id: user._id}, {$pull: {swipeLeft: projectId}});
+    }
+    returnWithOKJson(res);
+
+  } catch (error) {
+    console.error(error);
+    returnWithErrorJson(res, "Server error");
+  }
+});
+
+
+
 export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
   try {
     if (!projectId) {
@@ -677,8 +768,7 @@ export const getProjectIfMember = async (user: Express.User, projectId: ObjectId
     const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
       _id: projectId,
     });
-    // TODO: check if user is in project
-    if (project && project.createdBy.equals(user._id)) {
+    if (project && (project.createdBy.equals(user._id) || project.acceptedUsers.find(val => val.equals(user._id)))) {
       return project;
     }
     return null;
