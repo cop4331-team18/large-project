@@ -70,7 +70,9 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
     <div className="matching-page">
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
-      <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
+      <div className="matching-attributes-input">
+        <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
+      </div>
 
       {/* Current Profile */}
       {currentIndex >= 0 && matchOptions[currentIndex] && matchOptionsCreatedBy[currentIndex] ? (
