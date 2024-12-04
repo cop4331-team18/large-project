@@ -155,7 +155,7 @@ const ChatPage: React.FC<ChatProps> = ({
     if (projects.length === 0) {
       setCurrentChat('');
     } else if (projects.length > 0 && !currentChat) {
-      setCurrentChat(projects[0]._id);
+      // setCurrentChat(projects[0]._id);
     }
     setProjects(projects);
     for (const project of projects) {

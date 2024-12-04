@@ -66,8 +66,10 @@ export const sendToAllMembers = async (project: WithId<Project> | ObjectId, mess
     if (project instanceof ObjectId) {
         project = (await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({_id: project}))!;
     }
-    // TODO: Send to everyone in project
     io.to(`user:${project.createdBy}`).emit("message-res", message);
+    for (const userId of project.acceptedUsers) {
+        io.to(`user:${userId}`).emit("message-res", message);
+    }
 }
 
 export const saveMessageToDatabase = async (message: ChatMessage): Promise<WithId<ChatMessage>> => {
