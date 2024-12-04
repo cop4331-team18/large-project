@@ -57,7 +57,20 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
     } catch (error) {
         console.log(error);
     }
-}
+  }
+
+  const handleUndoAllLeftSwipes = async(e: FormEvent) => {
+    e.preventDefault();
+    try {
+      const response = await apiCall.post("/projects/undo-all-left-swipes");
+      if (response.status === 200) {
+        alert("Success!");
+        fetchUserStatus();
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <div className="settings-page">
@@ -125,7 +138,6 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
           {/* AttributesInput Component */}
           <AttributesInput
             setAttributesList={setAttributesList}
-            limit={5} 
             placeholder="Search and select attributes"
           />
         </div>
@@ -136,6 +148,7 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
             <button className="log-out-btn" onClick={handleLogout}>
               Log Out
             </button>
+            <button onClick={handleUndoAllLeftSwipes}>Undo all Left Swipes</button>
           </div>
 
           {/* Cancel and Save Buttons */}
