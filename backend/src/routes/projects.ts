@@ -179,10 +179,19 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
       }
     );
     
+    // This is just for anyone who had this project loaded up already, this will delete the project for them automatically.
+    const deleteProjectMessage: ChatMessage = {
+      message: `Project was deleted by @${user.username}`,
+      project: new ObjectId(projectId),
+      sender: user._id,
+      createdAt: new Date(),
+      messageType: 'DELETE',
+    };
+    await sendToAllMembers(new ObjectId(projectId), await saveMessageToDatabase(deleteProjectMessage), io);
     await db.collection<Project>(PROJECT_COLLECTION_NAME).deleteOne({
-        _id: new ObjectId(projectId),
-        createdBy: user._id,
-      });
+      _id: new ObjectId(projectId),
+      createdBy: user._id,
+    });
     res.status(200).json({
       message: "Project deleted successfully.",
     });
@@ -218,7 +227,7 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
         },
         { $set: { name: body.name, description: body.description } }
       );
-      
+
     const updateProjectMessage: ChatMessage = {
       message: `Project was updated by @${user.username}`,
       project: new ObjectId(body.id),
