@@ -77,7 +77,7 @@
   select {
     height: auto;
   }
-  
+
   .settings-actions-container {
     display: flex;
     justify-content: space-between; /* Pushes children to far ends */
