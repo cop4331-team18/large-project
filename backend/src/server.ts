@@ -40,7 +40,7 @@ app.get("/", async (req: Request, res: Response) => {
 });
 
 // https://socket.io/how-to/use-with-passport
-const io = new Server(httpServer);
+export const io = new Server(httpServer);
 io.engine.use(cors({origin: ALLOWED_ORIGINS, credentials: true}));
 io.engine.use(sessionMiddleware);
 io.engine.use(passport.authenticate('session'));

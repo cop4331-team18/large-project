@@ -1,9 +1,10 @@
 import { Server } from "socket.io";
-import { ChatMessage, ChatMessageInput, Project, SocketWithUser } from "../util/types";
-import { FindCursor, ObjectId, WithId } from "mongodb";
+import { ChatMessage, ChatMessageInput, Project, ProjectLastReadAt, SocketWithUser } from "../util/types";
+import { ObjectId, WithId } from "mongodb";
 import { db } from "../util/db";
 import { CHAT_COLLECTION_NAME, PROJECT_COLLECTION_NAME, returnWithErrorJson } from "../util/constants";
 import express, { Router, Request, Response } from "express";
+import { getProjectIfMember } from "./projects";
 
 // Ideally, you'd encrypt messages. For the sake of simplicity, I'll ignore that.
 export const chatSocketEvents = (io: Server) => {
@@ -12,6 +13,7 @@ export const chatSocketEvents = (io: Server) => {
         if (!user) {
             return;
         }
+
         socket.on("chat", async (data: ChatMessageInput) => {
             try {
                 const message: ChatMessage = {
@@ -21,26 +23,59 @@ export const chatSocketEvents = (io: Server) => {
                     createdAt: new Date(),
                     messageType: 'CHAT',
                 };
-                if (!message.project) {
-                    return;
-                }
-                // TODO: Make sure user is in the project
-                const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
-                    _id: message.project,
-                });
+                const project: WithId<Project> | null = await getProjectIfMember(user, message.project);
                 if (!project) {
                     return;
                 }
-                const result = await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).insertOne(message);
-                const socketMessage: WithId<ChatMessage> = (await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).findOne({"_id": result.insertedId}))!;
-                // TODO: Send to everyone in project
-                io.to(`user:${project.createdBy}`).emit("messasge-res", socketMessage);
+                await sendToAllMembers(project, await saveMessageToDatabase(message), io);
+            } catch (error) {
+                console.log(error);
+            }
+        });
+
+        socket.on("read", async (data: ChatMessageInput) => {
+            try {
+                const message: ChatMessage = {
+                    message: `Read by ${user._id}`,
+                    project: new ObjectId(data.project),
+                    sender: new ObjectId(user._id),
+                    createdAt: new Date(),
+                    messageType: 'READ',
+                }
+                const project: WithId<Project> | null = await getProjectIfMember(user, message.project);
+                if (!project) {
+                    return;
+                }
+                const newLastReadAt: ProjectLastReadAt = {
+                    userId: user._id,
+                    date: new Date(),
+                };
+                await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: project._id}, {$pull: {lastReadAt: {userId: user._id}}});
+                await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: project._id}, {$addToSet: {lastReadAt: newLastReadAt}});
+                // Definitely don't need to save this but just to utilize DRY at frontend.
+                await sendToAllMembers(project, await saveMessageToDatabase(message), io);
             } catch (error) {
                 console.log(error);
             }
         });
     });
 };
+
+export const sendToAllMembers = async (project: WithId<Project> | ObjectId, message: WithId<ChatMessage>, io: Server): Promise<void> => {
+    if (project instanceof ObjectId) {
+        project = (await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({_id: project}))!;
+    }
+    // TODO: Send to everyone in project
+    io.to(`user:${project.createdBy}`).emit("message-res", message);
+}
+
+export const saveMessageToDatabase = async (message: ChatMessage): Promise<WithId<ChatMessage>> => {
+    if (message.messageType !== 'READ') {
+        await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: message.project}, {$set: {lastMessageAt: message.createdAt}});
+    }
+    const result = await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).insertOne(message);
+    return (await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).findOne({_id: result.insertedId}))!;
+}
 
 export const chatRouter: Router = express.Router();
 

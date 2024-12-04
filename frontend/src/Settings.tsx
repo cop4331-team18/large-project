@@ -47,7 +47,6 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
       <div className="settings-container">
         <h1>Account Settings</h1>
 
-      <button className="log-out-btn" onClick={handleLogout}>Log Out</button>
       
         {/* User Information */}
         <div className="section">
@@ -91,7 +90,7 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
         </div>
 
         {/* Projects */}
-        <div className="section">
+        {/* <div className="section">
           <h2>Projects</h2>
           <div className="form-row">
             <div className="form-group">
@@ -118,7 +117,7 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
               placeholder="Project Description"
             />
           </div>
-        </div>
+        </div> */}
 
         {/* Bio */}
         <div className="section">
@@ -140,15 +139,25 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
           </select>
         </div>
 
-        {/* Save and Cancel Buttons */}
-        <div className="settings-actions">
-          <button className="cancel-btn" onClick={handleCancel}>
-            Cancel
-          </button>
-          <button className="save-btn" onClick={handleSave}>
-            Save
-          </button>
+        <div className="settings-actions-container">
+          {/* Log Out Button */}
+          <div className="logout-actions">
+            <button className="log-out-btn" onClick={handleLogout}>
+              Log Out
+            </button>
+          </div>
+
+          {/* Cancel and Save Buttons */}
+          <div className="settings-actions">
+            <button className="cancel-btn" onClick={handleCancel}>
+              Cancel
+            </button>
+            <button className="save-btn" onClick={handleSave}>
+              Save
+            </button>
+          </div>
         </div>
+        
       </div>
     </div>
   );
