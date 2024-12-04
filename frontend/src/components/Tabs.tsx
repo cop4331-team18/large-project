@@ -36,6 +36,14 @@ const Tabs: React.FC<TabsPop> = ({currentTab, chatNotifications}: TabsPop) => {
             <div className="tab" onClick={() => navigate("/settings")}>
                 <span>Settings</span>
             </div>}
+            {currentTab === "projects" ? 
+            <div className="tab active">
+                <span>Projects</span>
+            </div>
+            :
+            <div className="tab" onClick={() => navigate("/projects")}>
+                <span>Projects</span>
+            </div>}
       </div>
     );
 };

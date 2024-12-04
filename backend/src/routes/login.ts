@@ -145,6 +145,7 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
                 email : body.email,
                 firstName: body.firstName,
                 lastName: body.lastName,
+                bio: "",
                 salt: salt,
                 joinedAt: new Date(),
                 isVerified: false,

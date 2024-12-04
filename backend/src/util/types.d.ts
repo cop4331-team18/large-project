@@ -9,6 +9,7 @@ export type User = {
     salt: string,
     firstName: string,
     lastName: string,
+    bio: string,
     joinedAt: Date,
     isVerified: boolean,
     verificationToken?: string | null,

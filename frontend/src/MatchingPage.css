@@ -241,6 +241,28 @@ h2 {
   animation: swipeLeft 0.7s ease-out forwards;
 }
 
+/* Key frames */
+@keyframes swipeRight {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%) rotate(10deg) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes swipeLeft {
+  0% {
+    transform: translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%) rotate(-10deg) scale(0.9);
+    opacity: 0;
+  }
+}
 
 /* Message when no profiles are left */
 .no-projects-message {
