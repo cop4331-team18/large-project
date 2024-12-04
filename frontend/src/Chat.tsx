@@ -1,7 +1,7 @@
 import "./Chat.css";
 import { Socket } from "socket.io-client";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { apiCall, CHAT_PAGE_SIZE, ChatMessage, ChatMessageInput, getDateString, Project } from "./util/constants";
+import { apiCall, CHAT_PAGE_SIZE, ChatMessage, ChatMessageInput, getDateString, Project, User } from "./util/constants";
 import Tabs from "./components/Tabs";
 import InfiniteScroll from "react-infinite-scroll-component";
 
@@ -41,6 +41,7 @@ const MessageView: React.FC<MessageViewProp> = ({message}: MessageViewProp) => {
 }
 
 interface ChatProps {
+  user: User | null;
   socket: Socket | null;
   socketEvents: Set<string>;
   setSocketEvents: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -55,11 +56,14 @@ interface ChatProps {
   setOldMessagesPageNum: React.Dispatch<React.SetStateAction<Map<string, number>>>;
   oldMessagesHasNext: Map<string, boolean>;
   setOldMessagesHasNext: React.Dispatch<React.SetStateAction<Map<string, boolean>>>;
-  messagesResConnectDate: Date;
-  setMessagesResConnectDate: React.Dispatch<React.SetStateAction<Date>>;
+  oldMessagesViewDate: Map<string, Date>;
+  setOldMessagesViewDate: React.Dispatch<React.SetStateAction<Map<string, Date>>>;
+  projects: Project[];
+  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
 }
 
 const ChatPage: React.FC<ChatProps> = ({
+  user,
   socket, 
   socketEvents,
   setSocketEvents,
@@ -74,11 +78,12 @@ const ChatPage: React.FC<ChatProps> = ({
   setOldMessagesPageNum,
   oldMessagesHasNext,
   setOldMessagesHasNext,
-  messagesResConnectDate,
-  setMessagesResConnectDate,
+  oldMessagesViewDate,
+  setOldMessagesViewDate,
+  projects,
+  setProjects,
 }: ChatProps) => {
   const [messageInput, setMessageInput] = useState<string>('');
-  const [projects, setProjects] = useState<Project[]>([]);
   const [currentChat, setCurrentChat] = useState<string>('');
   const [isLoadingOldMessages, setIsLoadingOldMessages] = useState<boolean>(false);
 
@@ -90,28 +95,74 @@ const ChatPage: React.FC<ChatProps> = ({
     if (socket) {
       if (!socketEvents.has("message-res")) {
         setSocketEvents(prev => prev.add("message-res"));
-        setMessagesResConnectDate(new Date());
-        socket.on("messasge-res", (data: ChatMessage) => {
+        socket.on("message-res", async (data: ChatMessage) => {
+          if (data.messageType === 'CREATE') {
+            setOldMessagesViewDate(prev => new Map(prev).set(data._id, new Date()));
+            await fetchUserProjects();
+          } else if (data.messageType === 'UPDATE') {
+            await fetchUserProjects();
+          } else if (data.messageType === 'DELETE') {
+            if (currentChat === data.project) {
+              setCurrentChat('');
+            }
+            setProjects(prev => {
+              const newProjects = [];
+              for (const project of prev) {
+                if (project._id !== data.project) {
+                  newProjects.push(project);
+                }
+              }
+              return newProjects;
+            });
+            return; // Play around with this and make sure this always works
+          }
           setNewMessages(prev => {
             const newMap = new Map(prev);
             const messages: ChatMessage[] = newMap.get(data.project) || [];
             newMap.set(data.project, [data, ...messages]);
             return newMap;
           });
-          setChatNotifications(prev => {
-            return prev+1;
-          });
+          if (data.messageType !== 'READ') {
+            setProjects(prev => {
+              const copy = [...prev];
+              const updateProject = copy.find(val => val._id === data.project);
+              if (updateProject) {
+                updateProject.lastMessageAt = data.createdAt;
+              }
+              return copy;
+            })
+          }
         });
       }
     }
-  }, [socket]);
+    return () => {
+      if (socket) {
+        if (socketEvents.has("message-res")) {
+          socket.off("message-res");
+          setSocketEvents(prev => {
+            prev.delete("message-res");
+            return new Set(prev);
+          });
+        }
+      }
+    }
+  }, [socket, currentChat, projects, socketEvents, oldMessagesViewDate]);
 
   const fetchUserProjects = async() => {
     const response = await apiCall.get(`/projects/get`);
     const data: any = response.data;
-    setProjects(data.projects);
-    if (data.projects.length > 0) {
-      setCurrentChat(data.projects[0]._id);
+    const projects: Project[] = data.projects;
+    if (projects.length === 0) {
+      setCurrentChat('');
+    } else if (projects.length > 0 && !currentChat) {
+      setCurrentChat(projects[0]._id);
+    }
+    setProjects(projects);
+    for (const project of projects) {
+      const lastReadAt = project.lastReadAt.find(val => user!._id === val.userId);
+      if (lastReadAt && project.lastMessageAt > lastReadAt.date) {
+        setChatNotifications(prev => prev+1);
+      }
     }
   };
 
@@ -119,7 +170,21 @@ const ChatPage: React.FC<ChatProps> = ({
     if (isLoggedIn === true) {
       fetchUserProjects();
     }
-}, [isLoggedIn]);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    let isSorted: boolean = true;
+    for (let i = 0; i < projects.length-1; ++i) {
+      if (projects[i].lastMessageAt.localeCompare(projects[i+1].lastMessageAt) < 0) {
+        isSorted = false;
+      }
+    }
+    if (!isSorted) {
+      setProjects(prev => {
+        return [...prev].sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+      });
+    }
+  }, [projects]);
 
   const sendChatMessage = (e: FormEvent) => {
     e.preventDefault();
@@ -140,11 +205,15 @@ const ChatPage: React.FC<ChatProps> = ({
 
   const loadOldMessages = async() => {
     setIsLoadingOldMessages(true);
+    const createdAtBefore = oldMessagesViewDate.get(currentChat) || new Date();
+    if (!oldMessagesViewDate.get(currentChat)) {
+      setOldMessagesViewDate(prev => new Map(prev).set(currentChat, createdAtBefore));
+    }
     const pageNum: number = oldMessagesPageNum.get(currentChat) || 0;
     const response = await apiCall.get("/chat/getpage", {
       params: {
         projectId: currentChat,
-        createdAtBefore: messagesResConnectDate,
+        createdAtBefore: createdAtBefore,
         pageNum: pageNum,
         pageSize: CHAT_PAGE_SIZE,
       }
