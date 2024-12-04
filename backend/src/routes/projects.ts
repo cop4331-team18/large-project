@@ -218,6 +218,15 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
         },
         { $set: { name: body.name, description: body.description } }
       );
+      
+    const updateProjectMessage: ChatMessage = {
+      message: `Project was updated by @${user.username}`,
+      project: new ObjectId(body.id),
+      sender: user._id,
+      createdAt: new Date(),
+      messageType: 'UPDATE',
+    };
+    await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
 
     res.status(200).json({
       message: "Project updated successfully.",
@@ -262,6 +271,14 @@ projectRouter.post("/attribute/add", async (req: Request, res: Response) => {
 
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
+      const updateProjectMessage: ChatMessage = {
+        message: `Project was updated by @${user.username}`,
+        project: new ObjectId(body.id),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'UPDATE',
+      };
+      await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
       res.status(200).json({ message: "Attribute added succesfully." });
       return;
     } else {
@@ -303,6 +320,14 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
 
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
+      const updateProjectMessage: ChatMessage = {
+        message: `Project was updated by @${user.username}`,
+        project: new ObjectId(body.id),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'UPDATE',
+      };
+      await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
       res.status(200).json({ message: "Attribute deleted succesfully." });
       return;
     } else {

@@ -61,7 +61,10 @@ export const chatSocketEvents = (io: Server) => {
     });
 };
 
-export const sendToAllMembers = async (project: WithId<Project>, message: WithId<ChatMessage>, io: Server): Promise<void> => {
+export const sendToAllMembers = async (project: WithId<Project> | ObjectId, message: WithId<ChatMessage>, io: Server): Promise<void> => {
+    if (project instanceof ObjectId) {
+        project = (await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({_id: project}))!;
+    }
     // TODO: Send to everyone in project
     io.to(`user:${project.createdBy}`).emit("message-res", message);
 }

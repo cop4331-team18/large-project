@@ -99,6 +99,8 @@ const ChatPage: React.FC<ChatProps> = ({
           if (data.messageType === 'CREATE') {
             await fetchUserProjects();
             return; // Play around with this and make sure this always works
+          } else if (data.messageType === 'UPDATE') {
+            await fetchUserProjects();
           }
           setNewMessages(prev => {
             const newMap = new Map(prev);
