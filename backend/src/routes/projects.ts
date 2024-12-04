@@ -9,8 +9,10 @@ import {
 } from "../util/constants";
 import { getReqUser } from "./login";
 import { WithId, ObjectId } from "mongodb";
-import { User, Project } from "../util/types";
+import { User, Project, ChatMessage } from "../util/types";
 import { db } from "../util/db";
+import { io } from "../server";
+import { saveMessageToDatabase, sendToAllMembers } from "./chat";
 
 export const projectRouter: Router = express.Router();
 interface UpdateProject {
@@ -82,6 +84,7 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         swipeLeft: [],
         swipeRight: [],
         lastReadAt: [],
+        lastMessageAt: new Date(),
       });
 
     //update user with new project document
@@ -91,6 +94,23 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         { _id: user._id },
         { $addToSet: { projects: insertResult.insertedId } }
       );
+
+    if (!insertResult.insertedId) {
+      returnWithErrorJson(res, "Error occured while creating project");
+      return;
+    }
+
+    const project: WithId<Project> = (await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({_id: insertResult.insertedId}))!;
+
+    const createProjectMessage: ChatMessage = {
+      message: `New Project created by @${user.username}`,
+      project: project._id,
+      sender: user._id,
+      createdAt: new Date(),
+      messageType: 'CREATE',
+    };
+
+    await sendToAllMembers(project, await saveMessageToDatabase(createProjectMessage), io);
 
     res.status(200).json({
       message: "Project added successfully.",

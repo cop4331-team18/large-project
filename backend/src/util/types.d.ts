@@ -33,6 +33,7 @@ export type Project = {
     swipeLeft: ObjectId[],
     swipeRight: ObjectId[],
     lastReadAt: ProjectLastReadAt[],
+    lastMessageAt: Date,
 }
 
 export type ChatMessageInput = {
@@ -45,7 +46,7 @@ export type ChatMessage = {
     project: ObjectId,
     sender: ObjectId,
     createdAt: Date,
-    messageType: 'CHAT' | 'JOIN' | 'READ';
+    messageType: 'CHAT' | 'CREATE' | 'JOIN' | 'READ';
 }
 
 declare global {

@@ -5,7 +5,7 @@ import MatchingPage from './MatchingPage';
 import ChatPage from './Chat';
 import SettingsPage from './Settings';
 import ProjectsPage from './Projects';
-import { apiCall, ChatMessage, SERVER_BASE_URL, User } from './util/constants';
+import { apiCall, ChatMessage, Project, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
 import "./App.css"
 
@@ -25,7 +25,8 @@ function App() {
   const [oldMessages, setOldMessages] = useState<Map<string, ChatMessage[]>>(new Map());
   const [oldMessagesPageNum, setOldMessagesPageNum] = useState<Map<string, number>>(new Map());
   const [oldMessagesHasNext, setOldMessagesHasNext] = useState<Map<string, boolean>>(new Map());
-  const [messagesResConnectDate, setMessagesResConnectDate] = useState<Date>(new Date());
+  const [oldMessagesViewDate, setOldMessagesViewDate] = useState<Map<string, Date>>(new Map());
+  const [projects, setProjects] = useState<Project[]>([]);
 
   const refreshSocket = (loginStatus: boolean) => {
     if (loginStatus) {
@@ -98,6 +99,7 @@ function App() {
 
           <Route path="/chat" element={
             <ChatPage 
+              user={user}
               socket={socket}
               socketEvents={socketEvents}
               setSocketEvents={setSocketEvents}
@@ -112,8 +114,10 @@ function App() {
               setOldMessagesPageNum={setOldMessagesPageNum}
               oldMessagesHasNext={oldMessagesHasNext}
               setOldMessagesHasNext={setOldMessagesHasNext}
-              messagesResConnectDate={messagesResConnectDate}
-              setMessagesResConnectDate={setMessagesResConnectDate}
+              oldMessagesViewDate={oldMessagesViewDate}
+              setOldMessagesViewDate={setOldMessagesViewDate}
+              projects={projects}
+              setProjects={setProjects}
             />
           } />
 

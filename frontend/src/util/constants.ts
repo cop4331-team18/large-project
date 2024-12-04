@@ -18,7 +18,7 @@ export type User = {
     projects: string[],
     swipeLeft: string[],
     swipeRight: string[],
-} & Omit<BackendUser, 'password' | 'salt' | 'verificationToken' | 'joinedAt' | 'projects'>;
+} & Omit<BackendUser, 'password' | 'salt' | 'verificationToken' | 'joinedAt' | 'projects' | 'swipeLeft' | 'swipeRight'>;
 
 export type Project = {
     '_id': string,
@@ -29,7 +29,8 @@ export type Project = {
         userId: string,
         date: string,
     }[],
-} & Omit<BackendProject, 'createdBy'>;
+    lastMessageAt: string,
+} & Omit<BackendProject, 'createdBy' | 'swipeLeft' | 'swipeRight' | 'lastReadAt' | 'lastMessageAt'>;
 
 export const getDateString = (date: Date) => {
     return new Date(date).toLocaleString(undefined, {
