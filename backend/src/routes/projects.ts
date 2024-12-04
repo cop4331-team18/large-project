@@ -140,19 +140,49 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
 
   try {
     //delete the project from the database
+
+    const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+      _id: new ObjectId(projectId),
+      createdBy: user._id
+    });
+
+    if (!project) {
+      returnWithErrorJson(res, "No permission to delete project");
+      return;
+    }
+
+    for (const idOfSwiper of project.swipeLeft) {
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne({
+        _id: new ObjectId(idOfSwiper)
+      }, {
+        $pull: {swipeLeft: project._id}
+      });
+    }
+
+    for (const idOfSwiper of project.swipeRight) {
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne({
+        _id: new ObjectId(idOfSwiper)
+      }, {
+        $pull: {swipeRight: project._id}
+      });
+    }
+    
+    //updates the user by removing the pID
+    await db
+    .collection<User>(USER_COLLECTION_NAME)
+    .updateOne(
+      { _id: user._id },
+      { 
+        $pull: {
+          projects: new ObjectId(projectId),
+        } 
+      }
+    );
+    
     await db.collection<Project>(PROJECT_COLLECTION_NAME).deleteOne({
         _id: new ObjectId(projectId),
         createdBy: user._id,
       });
-
-    //updates the user by removing the pID
-    await db
-      .collection<User>(USER_COLLECTION_NAME)
-      .updateOne(
-        { _id: user._id },
-        { $pull: { projects: new ObjectId(projectId) } }
-      );
-
     res.status(200).json({
       message: "Project deleted successfully.",
     });
