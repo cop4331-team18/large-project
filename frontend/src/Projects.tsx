@@ -41,6 +41,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({chatNotifications}: ProjectsProp
             <option value="Java">Java</option>
             <option value="C++">C++</option>
             <option value="Ruby">Ruby</option>
+            <option value="C">Ruby</option>
           </select>
         </div>
           </div> {/*used for creation of project on project page  */}
