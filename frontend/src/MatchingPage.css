@@ -5,8 +5,6 @@
   align-items: center;
   justify-content: flex-start;
   height: 100vh; /* Full viewport height */
-  background-color: #727d8d;
-  margin-top: 20px;
 }
 /* Profile Card (as Main Container) */
 .project-card {

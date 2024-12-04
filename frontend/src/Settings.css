@@ -7,7 +7,6 @@
     flex-direction: column;
     justify-content: flex-start; /* Centers content vertically */
     align-items: center; /* Centers content horizontally */
-    background-color: #727d8d;
   
   .settings-container {
     width: 90%; /* Takes up 90% of the screen width */

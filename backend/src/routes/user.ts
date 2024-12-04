@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express';
 import { attributes, returnWithErrorJson, USER_COLLECTION_NAME } from "../util/constants";
 import { getReqUser } from './login';
-import { WithId } from 'mongodb';
+import { ObjectId, WithId } from 'mongodb';
 import { User } from '../util/types';
 import { db } from '../util/db';
 
@@ -134,6 +134,42 @@ userRouter.post("/update", async (req: Request, res: Response) => {
       console.error(error);
       returnWithErrorJson(res, "Error updating User.");
     }
-  });
+});
+
+userRouter.get("/:id", async (req: Request, res: Response) => {
+    const user: WithId<User> | null = await getReqUser(req);
+    const id: string = req.params.id;
+    try {
+        if (!user) {
+          returnWithErrorJson(res, "User is required.");
+          return;
+        }
+        
+        //check if user has verified email
+        if (!user.isVerified) {
+          returnWithErrorJson(res, "User email is not verified.");
+          return;
+        }
+        
+        if (!id) {
+            returnWithErrorJson(res, "No user id given");
+            return;
+        }
+        
+        const requestedUser: WithId<User> | null = await db.collection<User>(USER_COLLECTION_NAME).findOne({_id: new ObjectId(id)});
+        if (requestedUser) {
+            const resUser = requestedUser as any;
+            delete resUser.password;
+            delete resUser.salt;
+            delete resUser.verificationToken;
+            resUser.email = '';
+            res.status(200).send({user: resUser});
+        }
+        returnWithErrorJson(res, "User not found.");
+    } catch (error) {
+        returnWithErrorJson(res, "Error finding user.")
+    }
+
+});
 
 export default userRouter;

@@ -1,10 +1,11 @@
 .chat-page {
     font-family: Arial, sans-serif;
-    padding: 20px;
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #727d8d ;
+    padding-left: 20px;
+    padding-right: 20px;
+    height: 100vh;
   
   /* Chat Container Styles */
   .chat-container {
