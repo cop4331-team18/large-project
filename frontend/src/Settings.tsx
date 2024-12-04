@@ -149,7 +149,9 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
             <button className="log-out-btn" onClick={handleLogout}>
               Log Out
             </button>
-            <button onClick={handleUndoAllLeftSwipes}>Undo all Left Swipes</button>
+            <button className="undo-btn" onClick={handleUndoAllLeftSwipes}>
+              Undo all Left Swipes
+              </button>
           </div>
 
           {/* Cancel and Save Buttons */}

@@ -44,7 +44,7 @@ h3 {
 }
 
 .form-group label {
-  font-size: 0.9rem;
+  font-size: .9rem;
   font-weight: bold;
   color: #888;
   display: block;
@@ -55,7 +55,7 @@ h3 {
 textarea,
 input,
 select {
-  width: 100%;
+  width: 80%;
   padding: 17px 10px;
   border: 1px solid #ddd;
   border-radius: 10px;
@@ -94,12 +94,12 @@ select {
 }
 
 .update-btn {
-  background-color: #f3ebf5;
+  background-color: #057aff9c;
   color: black;
 }
 
 .update-btn:hover {
-  background-color: #f7d1ff;
+  background-color: #3ff5af;
 }
 
 .delete-btn {
@@ -118,7 +118,7 @@ select {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
   margin-bottom: 20px;
-  width: 100%;
+  width: 96%;
 }
 
 .project-card h3 {

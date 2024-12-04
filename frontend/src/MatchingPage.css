@@ -48,7 +48,7 @@
 
 /* Card Content */
 .card-content {
-  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-family: Arial, sans-serif;
   flex-grow: 1; 
   display: flex;
   flex-direction: column;

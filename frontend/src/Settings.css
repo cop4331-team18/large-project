@@ -5,8 +5,8 @@
     display: flex;
     min-height: 100vh;
     flex-direction: column;
-    justify-content: flex-start; /* Centers content vertically */
-    align-items: center; /* Centers content horizontally */
+    justify-content: flex-start; 
+    align-items: center; 
   
   .settings-container {
     width: 90%; /* Takes up 90% of the screen width */
@@ -31,7 +31,7 @@
   
   h2 {
     font-size: 1.2rem;
-    color: #727d8d; /* Light gray color for section headings */
+    color: #727d8d; 
     margin-bottom: 15px;
     text-align: left;
   }
@@ -49,10 +49,10 @@
   .form-group label {
     font-size: 0.9rem;
     font-weight: bold;
-    color: #727d8d; /* Light gray color for subsection headings */
+    color: #727d8d; 
     display: block;
     margin-bottom: 5px;
-    text-align: left; /* Aligns the label to the right */
+    text-align: left; 
   }
   
   textarea,
@@ -60,12 +60,13 @@
   select {
     width: 100%;
     padding: 17px 10px;
-    border: 2px solid #cfd1d3;
+    border: 2px solid #f0eeec;
     border-radius: 12px;
     font-size: 1rem;
-    background-color: #f0eeec; /* Matches the style of the example */
+    background-color: #f0eeec; 
     color: #333;
     box-sizing: border-box;
+    font-family: Arial, sans-serif;
   }
 
   textarea {
@@ -79,14 +80,15 @@
 
   .settings-actions-container {
     display: flex;
-    justify-content: space-between; /* Pushes children to far ends */
-    align-items: center; /* Aligns items vertically in the center */
-    margin-top: 20px; /* Adds spacing above the container */
+    justify-content: space-between; 
+    align-items: center; 
+    margin-top: 20px; 
   }
   
   .logout-actions {
-    display: flex; /* Ensure the Log Out button is in a flex container */
-    justify-content: flex-start; /* Align to the far left */
+    display: flex; 
+    justify-content: flex-start; 
+    gap: 10px;
   }
   
   .settings-actions {
@@ -97,7 +99,8 @@
   
   .cancel-btn,
   .save-btn,
-  .log-out-btn {
+  .log-out-btn,
+  .undo-btn {
     padding: 10px 20px;
     font-size: 1rem;
     font-weight: bold;
@@ -114,6 +117,11 @@
   .save-btn {
     background-color: #3e5a9b ;
     color: white;
+  }
+
+  .undo-btn {
+    background-color: #ddd;
+    color: black;
   }
   
   .log-out-btn {
