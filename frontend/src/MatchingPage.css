@@ -6,6 +6,7 @@
   justify-content: flex-start;
   height: 100vh; /* Full viewport height */
   background-color: #f8f9fa;
+  margin-top: 20px;
 }
 /* Profile Card (as Main Container) */
 .project-card {

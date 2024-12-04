@@ -13,7 +13,7 @@
     max-width: 700px;
     background: white;
     padding: 30px;
-    border-radius: 30px;
+    border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
     max-width: 90%; 
@@ -60,7 +60,7 @@
     width: 100%;
     padding: 17px 10px;
     border: 1px solid #ddd;
-    border-radius: 20px;
+    border-radius: 10px;
     font-size: 1rem;
     background-color: #f9f9f9; /* Matches the style of the example */
     color: #333;
@@ -76,6 +76,18 @@
     height: auto;
   }
   
+  .settings-actions-container {
+    display: flex;
+    justify-content: space-between; /* Pushes children to far ends */
+    align-items: center; /* Aligns items vertically in the center */
+    margin-top: 20px; /* Adds spacing above the container */
+  }
+  
+  .logout-actions {
+    display: flex; /* Ensure the Log Out button is in a flex container */
+    justify-content: flex-start; /* Align to the far left */
+  }
+  
   .settings-actions {
     display: flex;
     justify-content: flex-end;
@@ -83,7 +95,8 @@
   }
   
   .cancel-btn,
-  .save-btn {
+  .save-btn,
+  .log-out-btn {
     padding: 10px 20px;
     font-size: 1rem;
     font-weight: bold;
@@ -102,6 +115,11 @@
     color: black;
   }
   
+  .log-out-btn {
+    background-color: #ddd;
+    color: rgb(0, 0, 0);
+  }
+
   .cancel-btn:hover {
     background-color: #bbb;
   }
@@ -110,8 +128,7 @@
     background-color: #f385ff;
   }
 
-  .log-out-btn {
-    background-color: black;
-    color: white;
+  .log-out-btn:hover {
+    background-color: #bbb;
   }
 }
