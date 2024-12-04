@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useState, useEffect } from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
 import { apiCall } from "./util/constants";
@@ -10,11 +10,29 @@ interface SettingsProp {
 }
 
 const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatus}: SettingsProp) => {
-  // State to manage user profile data
-  // Commented because unused fields causes errors in prod
+  // const [firstName, setFirstName] = useState<string>("");
+  // const [lastName, setLastName] = useState<string>("");
   // const [username, setUsername] = useState<string>("");
   // const [email, setEmail] = useState<string>("");
   // const [bio, setBio] = useState<string>("");
+
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     try {
+  //       const response = await apiCall.get("/user/profile"); // Replace with your API endpoint
+  //       const data = response.data;
+  //       setFirstName(data.firstName || "");
+  //       setLastName(data.lastName || "");
+  //       setUsername(data.username || "");
+  //       setEmail(data.email || ""); // Set the email from the backend
+  //       setBio(data.bio || "");
+  //     } catch (error) {
+  //       console.error("Error fetching user data:", error);
+  //     }
+  //   };
+
+  //   fetchUserData();
+  // }, []);
 
   const [attributesList, setAttributesList] = useState<string[]>([]);
 
@@ -92,36 +110,6 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
             </div>
           </div>
         </div>
-
-        {/* Projects */}
-        {/* <div className="section">
-          <h2>Projects</h2>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="project-name">Name</label>
-              <input
-                id="project-name"
-                type="text"
-                placeholder="Project Name"
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="project-languages">Languages</label>
-              <input
-                id="project-languages"
-                type="text"
-                placeholder="Project Languages"
-              />
-            </div>
-          </div>
-          <div className="form-group">
-            <label htmlFor="project-description">Description</label>
-            <textarea
-              id="project-description"
-              placeholder="Project Description"
-            />
-          </div>
-        </div> */}
 
         {/* Bio */}
         <div className="section">

@@ -147,9 +147,9 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
-  background-color: #f385ff;
-}
+/* button:hover {
+  background-color: #310b35;
+} */
 
 button:focus {
   outline: none;
