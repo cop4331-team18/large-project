@@ -238,6 +238,7 @@ h2 {
 .reject-btn:hover {
   transform: scale(1.1); 
   box-shadow: 0 6px 12px rgba(255, 77, 79, 0.4); 
+  background-color: #a11214
 }
 
 .accept-btn {
@@ -247,6 +248,7 @@ h2 {
 .accept-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+  background-color: #3d8640;
 }
 
 /* Icons inside buttons */
