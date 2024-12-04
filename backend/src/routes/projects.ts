@@ -9,8 +9,10 @@ import {
 } from "../util/constants";
 import { getReqUser } from "./login";
 import { WithId, ObjectId } from "mongodb";
-import { User, Project } from "../util/types";
+import { User, Project, ChatMessage } from "../util/types";
 import { db } from "../util/db";
+import { io } from "../server";
+import { saveMessageToDatabase, sendToAllMembers } from "./chat";
 
 export const projectRouter: Router = express.Router();
 interface UpdateProject {
@@ -82,6 +84,7 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         swipeLeft: [],
         swipeRight: [],
         lastReadAt: [],
+        lastMessageAt: new Date(),
       });
 
     //update user with new project document
@@ -91,6 +94,23 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         { _id: user._id },
         { $addToSet: { projects: insertResult.insertedId } }
       );
+
+    if (!insertResult.insertedId) {
+      returnWithErrorJson(res, "Error occured while creating project");
+      return;
+    }
+
+    const project: WithId<Project> = (await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({_id: insertResult.insertedId}))!;
+
+    const createProjectMessage: ChatMessage = {
+      message: `New Project created by @${user.username}`,
+      project: project._id,
+      sender: user._id,
+      createdAt: new Date(),
+      messageType: 'CREATE',
+    };
+
+    await sendToAllMembers(project, await saveMessageToDatabase(createProjectMessage), io);
 
     res.status(200).json({
       message: "Project added successfully.",
@@ -120,19 +140,49 @@ projectRouter.post("/delete/:id", async (req: Request, res: Response) => {
 
   try {
     //delete the project from the database
+
+    const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+      _id: new ObjectId(projectId),
+      createdBy: user._id
+    });
+
+    if (!project) {
+      returnWithErrorJson(res, "No permission to delete project");
+      return;
+    }
+
+    for (const idOfSwiper of project.swipeLeft) {
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne({
+        _id: new ObjectId(idOfSwiper)
+      }, {
+        $pull: {swipeLeft: project._id}
+      });
+    }
+
+    for (const idOfSwiper of project.swipeRight) {
+      await db.collection<User>(USER_COLLECTION_NAME).updateOne({
+        _id: new ObjectId(idOfSwiper)
+      }, {
+        $pull: {swipeRight: project._id}
+      });
+    }
+    
+    //updates the user by removing the pID
+    await db
+    .collection<User>(USER_COLLECTION_NAME)
+    .updateOne(
+      { _id: user._id },
+      { 
+        $pull: {
+          projects: new ObjectId(projectId),
+        } 
+      }
+    );
+    
     await db.collection<Project>(PROJECT_COLLECTION_NAME).deleteOne({
         _id: new ObjectId(projectId),
         createdBy: user._id,
       });
-
-    //updates the user by removing the pID
-    await db
-      .collection<User>(USER_COLLECTION_NAME)
-      .updateOne(
-        { _id: user._id },
-        { $pull: { projects: new ObjectId(projectId) } }
-      );
-
     res.status(200).json({
       message: "Project deleted successfully.",
     });
@@ -168,6 +218,15 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
         },
         { $set: { name: body.name, description: body.description } }
       );
+      
+    const updateProjectMessage: ChatMessage = {
+      message: `Project was updated by @${user.username}`,
+      project: new ObjectId(body.id),
+      sender: user._id,
+      createdAt: new Date(),
+      messageType: 'UPDATE',
+    };
+    await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
 
     res.status(200).json({
       message: "Project updated successfully.",
@@ -212,6 +271,14 @@ projectRouter.post("/attribute/add", async (req: Request, res: Response) => {
 
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
+      const updateProjectMessage: ChatMessage = {
+        message: `Project was updated by @${user.username}`,
+        project: new ObjectId(body.id),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'UPDATE',
+      };
+      await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
       res.status(200).json({ message: "Attribute added succesfully." });
       return;
     } else {
@@ -253,6 +320,14 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
 
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
+      const updateProjectMessage: ChatMessage = {
+        message: `Project was updated by @${user.username}`,
+        project: new ObjectId(body.id),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'UPDATE',
+      };
+      await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
       res.status(200).json({ message: "Attribute deleted succesfully." });
       return;
     } else {
