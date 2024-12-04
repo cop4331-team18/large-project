@@ -7,14 +7,15 @@
     flex-direction: column;
     justify-content: flex-start; /* Centers content vertically */
     align-items: center; /* Centers content horizontally */
+    background-color: #727d8d;
   
   .settings-container {
     width: 90%; /* Takes up 90% of the screen width */
     max-width: 700px;
-    background: white;
+    background: #fff9eb;
     padding: 30px;
     border-radius: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
     max-width: 90%; 
   }
@@ -22,6 +23,7 @@
   h1 {
     font-size: 2rem;
     margin-bottom: 20px;
+    color: #384055;
   }
   
   .section {
@@ -30,7 +32,7 @@
   
   h2 {
     font-size: 1.2rem;
-    color: #888; /* Light gray color for section headings */
+    color: #727d8d; /* Light gray color for section headings */
     margin-bottom: 15px;
     text-align: left;
   }
@@ -48,7 +50,7 @@
   .form-group label {
     font-size: 0.9rem;
     font-weight: bold;
-    color: #888; /* Light gray color for subsection headings */
+    color: #727d8d; /* Light gray color for subsection headings */
     display: block;
     margin-bottom: 5px;
     text-align: left; /* Aligns the label to the right */
@@ -59,10 +61,10 @@
   select {
     width: 100%;
     padding: 17px 10px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    border: 2px solid #cfd1d3;
+    border-radius: 12px;
     font-size: 1rem;
-    background-color: #f9f9f9; /* Matches the style of the example */
+    background-color: #f0eeec; /* Matches the style of the example */
     color: #333;
     box-sizing: border-box;
   }
@@ -111,8 +113,8 @@
   }
   
   .save-btn {
-    background-color: #f7d1ff;
-    color: black;
+    background-color: #3e5a9b ;
+    color: white;
   }
   
   .log-out-btn {
@@ -125,10 +127,15 @@
   }
   
   .save-btn:hover {
-    background-color: #f385ff;
+    background-color: #323c53;
   }
 
   .log-out-btn:hover {
     background-color: #bbb;
   }
 }
+
+/* navy: #384055
+   creme: #fff9eb
+   gray: #727d8d
+   blue: #3e5a9b */

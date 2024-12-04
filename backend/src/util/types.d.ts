@@ -32,6 +32,8 @@ export type Project = {
     createdBy: ObjectId,
     swipeLeft: ObjectId[],
     swipeRight: ObjectId[],
+    acceptedUsers: ObjectId[],
+    rejectedUsers: ObjectId[],
     lastReadAt: ProjectLastReadAt[],
     lastMessageAt: Date,
 }

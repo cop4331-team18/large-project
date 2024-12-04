@@ -1,29 +1,3 @@
-/* body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-}
-  
-div {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-  
-header {
-    background-color: #007acc;
-    color: #fff;
-    padding: 20px;
-    text-align: center;
-}
-  
-header h1 {
-    margin: 0;
-    font-size: 2rem;
-} */
-
 .projects-page {
     font-family: Arial, sans-serif;
     padding: 20px;
@@ -36,7 +10,7 @@ header h1 {
   .projects-container {
     width: 90%; /* Takes up 90% of the screen width */
     max-width: 700px;
-    background: white;
+    background: #fff9eb;
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -44,59 +18,139 @@ header h1 {
     max-width: 90%; 
   }
 
-  .section {
-    margin-bottom: 40px;
-  }
+.section {
+  margin-bottom: 40px;
+}
 
-  h1 {
-    margin-bottom: 20px;
-  }
+h1 {
+  margin-bottom: 20px;
+}
 
-  h3{
-    font-size: .9rem;
-    color: #888; /*used for languages input in create project */
-    margin-bottom: 8px;
-    text-align: left;
-  }
+h3 {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 8px;
+  text-align: left;
+}
 
-  .form-row {
-    display: flex;
-    gap: 50px;
-    margin-bottom: 30px; /* Add spacing between rows */
-  }
-  
-  .form-group {
-    flex: 1;
-  }
-  
-  .form-group label {
-    font-size: 0.9rem;
-    font-weight: bold;
-    color: #888; /* Light gray color for subsection headings */
-    display: block;
-    margin-bottom: 5px;
-    text-align: left; /* Aligns the label to the right */
-  }
+.form-row {
+  display: flex;
+  gap: 50px;
+  margin-bottom: 30px;
+}
 
-  textarea,
-  input,
-  select {
-    width: 100%;
-    padding: 17px 10px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-size: 1rem;
-    background-color: #f9f9f9; /* Matches the style of the example */
-    color: #333;
-    box-sizing: border-box;
-  }
+.form-group {
+  flex: 1;
+}
 
-  .create-btn {
-    background-color: #f3ebf5;
-    color: black;
-  }
-  .create-btn:hover {
-    background-color: #f7d1ff;
-    color: black;
-  }
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #888;
+  display: block;
+  margin-bottom: 5px;
+  text-align: left;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 17px 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #f9f9f9;
+  color: #333;
+  box-sizing: border-box;
+}
+
+/* Top Create Project Button */
+.create-btn.top-btn {
+  background-color: #3e5a9b ;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease;
+}
+
+.create-btn.top-btn:hover {
+  background-color: #323c53;
+}
+
+/* Update and Delete Buttons */
+.update-btn,
+.delete-btn {
+  padding: 8px 15px;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.update-btn {
+  background-color: #f3ebf5;
+  color: black;
+}
+
+.update-btn:hover {
+  background-color: #f7d1ff;
+}
+
+.delete-btn {
+  background-color: #ffcccc;
+  color: black;
+}
+
+.delete-btn:hover {
+  background-color: #ff9999;
+}
+
+/* Project Cards */
+.project-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.project-card h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.project-card p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.project-card .attributes {
+  margin-bottom: 10px;
+}
+
+.project-card .attribute-tag {
+  display: inline-block;
+  background: #f3ebf5;
+  color: #333;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.project-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
 }

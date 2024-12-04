@@ -17,7 +17,7 @@ body, html {
   height: 100vh;
   width: 100%;
   font-family: Arial, sans-serif;
-  background-color: #f7f9fc;
+  background-color: #727d8d;
 }
 
 .logo {
@@ -73,16 +73,17 @@ body, html {
   font-weight: bold;
   padding: 10px 15px;
   border-radius: 5px;
+  justify-content: center; /* Aligns all items to the center */
 }
 
 .tab.active {
-  color: #0078d7;
-  background-color: #f7d1ff;
+  background-color: #3e5a9b ;
+  pointer-events: none;
 }
 
 .tab.tab {
-  color: black;
-  border-radius: 8px;
+  color: #fff9eb;
+  border-radius: 10px;
 }
 
 .tab-icon {
@@ -92,9 +93,22 @@ body, html {
 }
 
 .tab:hover {
-  color: #000000;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle gray shadow */
+  background-color: #6a6f79;
+  box-shadow: 8px 8px 10px rgba(0, 0, 0, 0.2); /* Subtle gray shadow */
   cursor: pointer;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 10px;
+}
+
+/* Logo styling */
+.tabs-logo {
+  width: 65px; /* Adjust size as needed */
+  height: auto;
 }
 
 /* Supporting Text */
@@ -118,7 +132,8 @@ a:hover {
 /* Headings */
 h1 {
   font-size: 1.8rem;
-  color: #333;
+  /* color: #333; */
+  color: #384055;
   margin-bottom: 1rem;
 }
 

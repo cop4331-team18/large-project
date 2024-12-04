@@ -127,9 +127,9 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
           />
         </div>
 
-        {/* Languages */}
+        {/* Attributes */}
         <div className="section">
-          <h2>Languages</h2>
+          <h2>Attributes</h2>
           <select multiple>
             <option value="JavaScript">JavaScript</option>
             <option value="Python">Python</option>
