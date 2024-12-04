@@ -2,6 +2,7 @@ import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import "./AuthForm.css";
 import { apiCall } from "./util/constants";
 import { useNavigate } from "react-router-dom";
+import logo from "./components/devswipe_logo.png";
 
 interface AuthFormProps {
   fetchUserStatus: () => Promise<void>,
@@ -83,85 +84,96 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
 
   return (
     <div className="auth-page">
-      {isLogin ? (
-        <div className="login-form">
-          <h1>Login</h1>
-          <input
-            type="text"
-            placeholder="Enter your Username"
-            value={username}
-            onChange={handleUsernameChange}
-          />
-          <input
-            type="password"
-            placeholder="Enter your Password"
-            value={password}
-            onChange={handlePasswordChange}
-          />
-          <button onClick={handleLogin}>Login</button>
-          {authErrorText && <p className="auth-error-text">{authErrorText}</p>}
-          <p>
-            Don't have an account?{" "}
-            <a href="#" onClick={() => {
-              setAuthErrorText("");
-              setIsLogin(false);
-            }}>
-              Create an account
-            </a>
-          </p>
+      <div className="auth-container">
+        <div className="auth-left">
+          <h1 className="welcome-text">Welcome!</h1>
+          <img src={logo} alt="Logo" className="auth-logo" />
         </div>
-      ) : (
-        <div className="signup-form">
-          <h1>Sign Up</h1>
-          <input
-            type="text"
-            placeholder="Create Username"
-            value={username}
-            onChange={handleUsernameChange}
-          />
-          <input
-            type="text"
-            placeholder="First Name"
-            value={firstName}
-            onChange={handleFirstNameChange}
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            value={lastName}
-            onChange={handleLastNameChange}
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={handleEmailChange}
-          />
-          <input
-            type="password"
-            placeholder="Create Password"
-            value={password}
-            onChange={handlePasswordChange}
-          />
-          <input
-            type="password"
-            placeholder="Confirm Password"
-            value={confirmPassword}
-            onChange={handleConfirmPasswordChange}
-          />
-          <button onClick={handleSignUp}>Sign Up</button>
-          {authErrorText && <p className="auth-error-text">{authErrorText}</p>}
-          <p>
-            Already have an account?{" "}
-            <a href="#" onClick={() => {
-              setAuthErrorText("");
-              setIsLogin(true);
-            }}>
-              Login here
-            </a>
-          </p>
+
+        <div className="auth-right"> 
+        {isLogin ? (
+          <div className="login-form">
+            <h1>Login</h1>
+            <input
+              type="text"
+              placeholder="Enter your Username"
+              value={username}
+              onChange={handleUsernameChange}
+            />
+            <input
+              type="password"
+              placeholder="Enter your Password"
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <button onClick={handleLogin}>Login</button>
+            {authErrorText && <p className="auth-error-text">{authErrorText}</p>}
+            <p>
+              Don't have an account?{" "}
+              <a href="#" onClick={() => {
+                setAuthErrorText("");
+                setIsLogin(false);
+              }}>
+                Create an account
+              </a>
+            </p>
+          </div>
+        ) : (
+          <div className="signup-form">
+            <h1>Sign Up</h1>
+            <input
+              type="text"
+              placeholder="Create Username"
+              value={username}
+              onChange={handleUsernameChange}
+            />
+            <input
+              type="text"
+              placeholder="First Name"
+              value={firstName}
+              onChange={handleFirstNameChange}
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={handleLastNameChange}
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <input
+              type="password"
+              placeholder="Create Password"
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+            />
+            <button onClick={handleSignUp}>Sign Up</button>
+            {authErrorText && <p className="auth-error-text">{authErrorText}</p>}
+            <p>
+              Already have an account?{" "}
+              <a href="#" onClick={() => {
+                setAuthErrorText("");
+                setIsLogin(true);
+              }}>
+                Login here
+              </a>
+            </p>
+          </div>
+        )}
         </div>
-      )}
+      </div>
+      
+    
     </div>
   );
 }
