@@ -1,4 +1,4 @@
-import React, { FormEvent, useState, useEffect } from "react";
+import React, { FormEvent, useState } from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
 import { apiCall } from "./util/constants";
@@ -9,6 +9,7 @@ interface SettingsProp {
   fetchUserStatus: () => Promise<void>;
 }
 
+// ADD "useEffect" TO IMPORT REACT WHEN UNCOMMENTING!!!!!!
 const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatus}: SettingsProp) => {
   // const [firstName, setFirstName] = useState<string>("");
   // const [lastName, setLastName] = useState<string>("");
