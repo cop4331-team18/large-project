@@ -12,8 +12,24 @@ export const apiCall = axios.create({
 
 export type ChatMessage = {'_id': string, project: string, sender: string} & Omit<BackendChatMessage, 'project' | 'sender'>;
 export type ChatMessageInput = BackendChatMessageInput;
-export type User = {'_id': string, projects: string[]} & Omit<BackendUser, 'password' | 'salt' | 'verificationToken' | 'projects'>;
-export type Project = {'_id': string, createdBy: string} & Omit<BackendProject, 'createdBy'>;
+export type User = {
+    '_id': string, 
+    joinedAt: string,
+    projects: string[],
+    swipeLeft: string[],
+    swipeRight: string[],
+} & Omit<BackendUser, 'password' | 'salt' | 'verificationToken' | 'joinedAt' | 'projects'>;
+
+export type Project = {
+    '_id': string,
+    createdBy: string,
+    swipeLeft: string[],
+    swipeRight: string[],
+    lastReadAt: {
+        userId: string,
+        date: string,
+    }[],
+} & Omit<BackendProject, 'createdBy'>;
 
 export const getDateString = (date: Date) => {
     return new Date(date).toLocaleString(undefined, {

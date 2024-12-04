@@ -180,10 +180,10 @@ loginRouter.get("/verify", async (req: Request, res: Response) => {
         returnWithErrorJson(res, "Verification token is required.");
         return;
     } else if (reqUser.isVerified) {
-        returnWithErrorJson(res, "User has their email verified already.");
+        returnWithErrorJson(res, "User has their email verified already. Make sure that you are signed in as the user you are trying to verify as.");
         return;
     } else if (reqUser.verificationToken !== token) {
-        returnWithErrorJson(res, "Invalid or expired verification token.");
+        returnWithErrorJson(res, "Invalid or expired verification token. Make sure that you are signed in as the user you are trying to verify as.");
         return;
     }
 

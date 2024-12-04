@@ -77,6 +77,7 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         createdBy: user._id,
         swipeLeft: [],
         swipeRight: [],
+        lastReadAt: [],
       });
 
     //update user with new project document
@@ -262,5 +263,23 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
   }
 });
 
+export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
+  try {
+    if (!projectId) {
+      return null;
+    }
+    const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
+      _id: projectId,
+    });
+    // TODO: check if user is in project
+    if (project && project.createdBy.equals(user._id)) {
+      return project;
+    }
+    return null;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+}
 
 export default projectRouter;
