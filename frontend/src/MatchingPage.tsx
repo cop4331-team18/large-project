@@ -13,7 +13,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [attributesList, setAttributesList] = useState<string[]>([]);
   const [matchOptions, setMatchOptions] = useState<Project[]>([]);
-  const [matchOptionsCreatedBy, setMatchOptionsCreatedBy] = useState<User[]>([]);
+  const [matchOptionsCreatedBy, setMatchOptionsCreatedBy] = useState<Map<string, User>>(new Map());
   const [currentIndex, setCurrentIndex] = React.useState<number>(-1);
   const [hasNext, setHasNext] = useState<boolean>(true);
 
@@ -29,11 +29,14 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
     if (projects.length > 0) {
       setMatchOptions(projects);
       setCurrentIndex(0);
-      const users = [];
-      for (const project of projects) {
-        users.push(await fetchUser(project.createdBy));
+      if (!matchOptionsCreatedBy.get(projects[0].createdBy)) {
+        const user = await fetchUser(projects[0].createdBy);
+        setMatchOptionsCreatedBy(prev => {
+          const newMap = new Map(prev);
+          newMap.set(user._id, user);
+          return newMap;
+        })
       }
-      setMatchOptionsCreatedBy(users);
     } else {
       setCurrentIndex(-1); // No more projects
     }
@@ -57,6 +60,14 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
     setTimeout(async () => {
       setSwipeDirection(null);
       if (currentIndex < matchOptions.length - 1) {
+        if (!matchOptionsCreatedBy.get(matchOptions[currentIndex+1].createdBy)) {
+          const user = await fetchUser(matchOptions[currentIndex+1].createdBy);
+          setMatchOptionsCreatedBy(prev => {
+            const newMap = new Map(prev);
+            newMap.set(user._id, user);
+            return newMap;
+          })
+        }
         setCurrentIndex(prev => prev+1);
       } else if (hasNext) {
         await fetchMoreOptions();
@@ -75,7 +86,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
       </div>
 
       {/* Current Profile */}
-      {currentIndex >= 0 && matchOptions[currentIndex] && matchOptionsCreatedBy[currentIndex] ? (
+      {currentIndex >= 0 && matchOptions[currentIndex] && matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy) ? (
         <div 
           key={matchOptions[currentIndex]._id} 
           className={`project-card ${
@@ -106,17 +117,17 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
           <div className="owner-info">
             <div className="section-header">
               <img src="/owner.svg" className="section-header-icon"/>
-              {matchOptionsCreatedBy[currentIndex].firstName && matchOptionsCreatedBy[currentIndex].lastName &&
-               `${matchOptionsCreatedBy[currentIndex].firstName} ${matchOptionsCreatedBy[currentIndex].lastName}`}
+              {matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.firstName && matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.lastName &&
+               `${matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.firstName} ${matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.lastName}`}
               <p className="matching-username-text">
-                {`@${matchOptionsCreatedBy[currentIndex].username}`}
+                {`@${matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.username}`}
               </p>  
             </div>
-            <p className="owner-bio">{!!matchOptionsCreatedBy[currentIndex].bio && 'User has no bio.'}</p>
+            <p className="owner-bio">{!!matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.bio && 'User has no bio.'}</p>
             {/* Need to add css for owner attributes (smaller) */}
             <div className="owner-attributes">
-              {matchOptionsCreatedBy[currentIndex].attributes.length === 0 && 'User has no attributes.'}
-              {matchOptionsCreatedBy[currentIndex].attributes.map((attribute, index) => (
+              {matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.attributes.length === 0 && 'User has no attributes.'}
+              {matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.attributes.map((attribute, index) => (
                 <span key={index} className="owner-attribute-tag">{attribute}</span>
               ))}
             </div>
