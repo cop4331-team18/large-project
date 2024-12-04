@@ -1,10 +1,11 @@
 import { Server } from "socket.io";
-import { ChatMessage, ChatMessageInput, Project, ProjectLastReadAt, SocketWithUser } from "../util/types";
+import { ChatMessage, ChatMessageInput, Project, ProjectLastReadAt, SocketWithUser, User } from "../util/types";
 import { ObjectId, WithId } from "mongodb";
 import { db } from "../util/db";
 import { CHAT_COLLECTION_NAME, PROJECT_COLLECTION_NAME, returnWithErrorJson } from "../util/constants";
 import express, { Router, Request, Response } from "express";
 import { getProjectIfMember } from "./projects";
+import { getReqUser } from "./login";
 
 // Ideally, you'd encrypt messages. For the sake of simplicity, I'll ignore that.
 export const chatSocketEvents = (io: Server) => {
@@ -93,6 +94,11 @@ interface ChatGetPageResponse {
 
 chatRouter.get("/getpage", async (req: Request, res: Response) => {
     try {
+        const user: WithId<User> | null = await getReqUser(req);
+        if (!user) {
+            returnWithErrorJson(res, "User is required");
+            return;
+        }
         const params: ChatGetPageParams = req.query as unknown as ChatGetPageParams;
         const pageNum = parseInt(params.pageNum), pageSize = parseInt(params.pageSize);
         if (Number.isNaN(pageNum) || pageNum < 0 || Number.isNaN(pageSize) || pageSize < 0) {
@@ -102,10 +108,7 @@ chatRouter.get("/getpage", async (req: Request, res: Response) => {
             returnWithErrorJson(res, "Project id not given.");
             return;
         }
-        // TODO: Make sure user is in the project
-        const project: WithId<Project> | null = await db.collection<Project>(PROJECT_COLLECTION_NAME).findOne({
-            _id: new ObjectId(params.projectId),
-        });
+        const project: WithId<Project> | null = await getProjectIfMember(user, new ObjectId(params.projectId));
         if (!project) {
             returnWithErrorJson(res, "User not in project");
             return;

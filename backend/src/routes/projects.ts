@@ -8,13 +8,19 @@ import {
   PROJECT_COLLECTION_NAME,
 } from "../util/constants";
 import { getReqUser } from "./login";
-import { WithId, ObjectId } from "mongodb";
+import { WithId, ObjectId, Filter } from "mongodb";
 import { User, Project, ChatMessage } from "../util/types";
 import { db } from "../util/db";
 import { io } from "../server";
 import { saveMessageToDatabase, sendToAllMembers } from "./chat";
 
 export const projectRouter: Router = express.Router();
+
+interface GetMatchOptionsParams {
+  attributes: string[];
+  pageSize: string;
+}
+
 interface UpdateProject {
   id: string;
   name: string;
@@ -56,6 +62,45 @@ projectRouter.get("/get", async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     returnWithErrorJson(res, "Error finding project");
+  }
+});
+
+projectRouter.get("/get-match-options", async (req: Request, res: Response) => {
+  try {
+    const user: WithId<User> | null = await getReqUser(req);
+    if (!user) {
+      returnWithErrorJson(res, "User is required");
+      return;
+    }
+    const params: GetMatchOptionsParams = req.query as unknown as GetMatchOptionsParams;
+    const pageSize = parseInt(params.pageSize);
+    if (Number.isNaN(pageSize) || pageSize < 0) {
+      returnWithErrorJson(res, "Invalid pageNum");
+      return;
+    }
+    if (params.attributes) {
+      for (const attribute of params.attributes) {
+        if (!attributes.has(attribute)) {
+          returnWithErrorJson(res, "At least one invalid attribute");
+          return;
+        }
+      }
+    }
+    const filter: Filter<Project> = {
+      $and: [
+        {swipeLeft: {$nin: [user._id]}},
+        {swipeRight: {$nin: [user._id]}},
+        {createdBy: {$ne: user._id}},
+      ],
+    };
+    if (params.attributes && params.attributes.length > 0) {
+      filter.attributes = {$all: params.attributes}
+    };
+    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).find(filter, {limit: pageSize}).toArray();
+    res.status(200).send({projects: page});
+  } catch (error) {
+    console.log(error);
+    returnWithErrorJson(res, "Error occurred");
   }
 });
 
@@ -383,30 +428,28 @@ projectRouter.post("/swipeLeft", async (req: Request, res: Response) => {
       return;
     }
 
+    //adds user id to swipeLeft on projects
+    const updateProjectSwipe = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+        { _id : new ObjectId(body.projectId) },
+        { $addToSet : { swipeLeft: user._id } }
+    );
+    
+    //adds projectId to swipeLeft on user
+    const updateUserSwipe = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
+      { _id : user._id },
+      { $addToSet : { swipeLeft: new ObjectId(body.projectId) } }
+    );
+  
+  
+    if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
+      res.status(200).json({ message: "Added Swipe to Project" });
+      return;
+    } else {
+      returnWithErrorJson(res, "Project Swipe was not successfully added.");
+      return;
+    }
   } catch (error) {
     console.error("the value is not in one of the arrays", error);
-  }
-  
-
-  //adds user id to swipeLeft on projects
-  const updateProjectSwipe = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
-      { _id : new ObjectId(body.projectId) },
-      { $addToSet : { swipeLeft: new ObjectId(user._id) } }
-  );
-  
-  //adds projectId to swipeLeft on user
-  const updateUserSwipe = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
-    { _id : user._id },
-    { $addToSet : { swipeLeft: new ObjectId(body.projectId) } }
-  );
-
-
-  if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
-    res.status(200).json({ message: "Added Swipe to Project" });
-    return;
-  } else {
-    returnWithErrorJson(res, "Project Swipe was not successfully added.");
-    return;
   }
 });
 
@@ -445,31 +488,31 @@ projectRouter.post("/swipeRight", async (req: Request, res: Response) => {
       return;
     }
     
+    //adds user id to swipeRight on projects
+    const updateProjectSwipe = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
+      { _id : new ObjectId(body.projectId) },
+      { $addToSet : { swipeRight: user._id } }
+    );
+    
+    //adds projectId to swipeRight on user
+    const updateUserSwipe = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
+      { _id : user._id },
+      { $addToSet : { swipeRight: new ObjectId(body.projectId) } }
+    );
+  
+  
+    if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
+      res.status(200).json({ message: "Added Swipe to Project" });
+      return;
+    } else {
+      returnWithErrorJson(res, "Project Swipe was not successfully added.");
+      return;
+    }
   } catch (error) {
     console.error("the value is not in one of the arrays", error);
   }
   
 
-  //adds user id to swipeRight on projects
-  const updateProjectSwipe = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
-      { _id : new ObjectId(body.projectId) },
-      { $addToSet : { swipeRight: new ObjectId(user._id) } }
-  );
-  
-  //adds projectId to swipeRight on user
-  const updateUserSwipe = await db.collection<User>(USER_COLLECTION_NAME).updateOne(
-    { _id : user._id },
-    { $addToSet : { swipeRight: new ObjectId(body.projectId) } }
-  );
-
-
-  if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
-    res.status(200).json({ message: "Added Swipe to Project" });
-    return;
-  } else {
-    returnWithErrorJson(res, "Project Swipe was not successfully added.");
-    return;
-  }
 });
 export const getProjectIfMember = async (user: Express.User, projectId: ObjectId | null | undefined): Promise<WithId<Project> | null> => {
   try {
