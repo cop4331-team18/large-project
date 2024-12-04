@@ -82,6 +82,7 @@
     padding-right: 10px;
     padding-top: 5px;
     padding-bottom: 5px; 
+    min-height: 80px;
 
     p, span {
       color: black;
@@ -93,5 +94,49 @@
   .infinite-scroll {
     display: flex;
     flex-direction: column-reverse;
+    overflow: hidden !important;
   }
+
+  .message-text-and-read-container {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .read-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+  }
+  
+  .read-hover {
+    visibility: hidden;
+    max-height: 120px;
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    width: 120px;
+    height: 90px;
+    background-color: black;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    right: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+
+  .read-hover-username {
+    color: white !important;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 2px;
+    margin-right: 2px;
+  }
+
+  .read-icon:hover .read-hover {
+    visibility: visible;
+    display: block;
+  }
+
 }

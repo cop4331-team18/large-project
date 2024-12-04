@@ -5,6 +5,41 @@ import { apiCall, CHAT_PAGE_SIZE, ChatMessage, ChatMessageInput, getDateString, 
 import Tabs from "./components/Tabs";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+interface MessageViewProp {
+  message: ChatMessage;
+}
+
+const MessageView: React.FC<MessageViewProp> = ({message}: MessageViewProp) => {
+  return (
+    <div className="message-view">
+      <div>
+        {/* TODO: need an endpoint or some way to fetch the user from backend */}
+        <span>{message.sender}</span>
+        <span><i>{getDateString(message.createdAt)}</i></span>
+        <div className="message-text-and-read-container">
+          <span>
+            {message.message}
+          </span>
+          <div className="read-icon">
+            <div className="read-hover">
+              <p className="read-hover-username">@jasonpyau</p>
+              <p className="read-hover-username">@eric</p>
+              <p className="read-hover-username">@ahmad</p>
+              <p className="read-hover-username">@tiffany</p>
+              <p className="read-hover-username">@justin</p>
+              <p className="read-hover-username">@dylan</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="black" className="bi bi-eye" viewBox="0 0 16 16">
+              <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
+              <path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5M4.5 8a3.5 3.5 0 1 1 7 0 3.5 3.5 0 0 1-7 0"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface ChatProps {
   socket: Socket | null;
   socketEvents: Set<string>;
@@ -130,23 +165,11 @@ const ChatPage: React.FC<ChatProps> = ({
   useEffect(() => {
     if (currentChat && !oldMessages.get(currentChat)) {
       loadOldMessages();
+      if (socket) {
+        socket.emit("read", {message: '', project: currentChat});
+      }
     }
   }, [currentChat]);
-
-  const MessageView: React.FC<ChatMessage> = (message: ChatMessage) => {
-    return (
-      <div className="message-view">
-        <div>
-          {/* TODO: need an endpoint or some way to fetch the user from backend */}
-          <span>{message.sender}</span>
-          <span>{getDateString(message.createdAt)}</span>
-        </div>
-        <p>
-          {message.message}
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="chat-page">
@@ -172,7 +195,7 @@ const ChatPage: React.FC<ChatProps> = ({
           <h1>{projects && currentChat && projects.find((project) => project._id === currentChat)!.name}</h1>
           <div className="message-container" id="message-container">
             {(newMessages.get(currentChat) || []).map(message => 
-              <MessageView key={message._id} {...message}/> 
+              <MessageView key={message._id} message={message}/> 
             )}
             <InfiniteScroll
               dataLength={(oldMessages.get(currentChat) || []).length}
@@ -191,7 +214,7 @@ const ChatPage: React.FC<ChatProps> = ({
               {
                 (oldMessages.get(currentChat) || []).map(message =>
                   <div key={message._id}>
-                    <MessageView {...message}/>
+                    <MessageView message={message}/>
                   </div>
                 )
               }

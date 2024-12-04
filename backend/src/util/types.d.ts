@@ -20,6 +20,11 @@ export type User = {
     swipeRight: ObjectId[],
 }
 
+export type ProjectLastReadAt = {
+    userId: ObjectId,
+    date: Date,
+};
+
 export type Project = {
     name: string,
     attributes: string[],
@@ -27,6 +32,7 @@ export type Project = {
     createdBy: ObjectId,
     swipeLeft: ObjectId[],
     swipeRight: ObjectId[],
+    lastReadAt: ProjectLastReadAt[],
 }
 
 export type ChatMessageInput = {
