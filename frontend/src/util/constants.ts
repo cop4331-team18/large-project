@@ -49,3 +49,4 @@ export const getDateString = (date: Date | string) => {
 }
 
 export const CHAT_PAGE_SIZE: number = 20;
+export const MATCHING_OPTIONS_SIZE: number = 20;

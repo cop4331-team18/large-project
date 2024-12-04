@@ -80,7 +80,7 @@ projectRouter.get("/get-match-options", async (req: Request, res: Response) => {
     const params: GetMatchOptionsParams = req.query as unknown as GetMatchOptionsParams;
     const pageSize = parseInt(params.pageSize);
     if (Number.isNaN(pageSize) || pageSize < 0) {
-      returnWithErrorJson(res, "Invalid pageNum");
+      returnWithErrorJson(res, "Invalid pageSize");
       return;
     }
     if (params.attributes) {

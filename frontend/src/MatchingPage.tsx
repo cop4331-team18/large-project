@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./MatchingPage.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
+import { apiCall, MATCHING_OPTIONS_SIZE } from "./util/constants";
 
 // Mock Definitions (until backend connected)
 type ObjectId = string; // placeholder
@@ -65,6 +66,20 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [attributesList, setAttributesList] = useState<string[]>([]);
+  // const [matchOptions, setMatchOptions] = useState<Project[]>([]);
+
+  const fetchMoreOptions = async() => {
+    apiCall.get("/projects/get-match-options", {
+      params: {
+        pageSize: MATCHING_OPTIONS_SIZE,
+        attributes: attributesList,
+      }
+    });
+  };
+
+  useEffect(() => {
+    fetchMoreOptions();
+  }, [attributesList]);
 
   useEffect(() => {
     console.log(attributesList);
