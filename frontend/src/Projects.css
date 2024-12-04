@@ -36,7 +36,7 @@ header h1 {
   .projects-container {
     width: 90%; /* Takes up 90% of the screen width */
     max-width: 700px;
-    background: white;
+    background: #fff9eb;
     padding: 30px;
     border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
