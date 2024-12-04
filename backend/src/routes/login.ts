@@ -151,6 +151,7 @@ loginRouter.post("/signup", async (req: Request, res: Response) => {
                 verificationToken: verificationToken,
                 attributes: [],
                 projects: [],
+                joinedProjects: [],
                 swipeLeft: [],
                 swipeRight: [],
             });

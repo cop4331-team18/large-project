@@ -12,7 +12,7 @@ interface AttributeBody {
 };
 
 //adding the attribute to the user
-userRouter.post("/user/add", async (req: Request, res: Response) => {
+userRouter.post("/add", async (req: Request, res: Response) => {
     
     try{
         const  body: AttributeBody = req.body;
@@ -54,7 +54,7 @@ userRouter.post("/user/add", async (req: Request, res: Response) => {
     }
 });
 
-userRouter.post("/user/delete", async (req: Request, res: Response) => {
+userRouter.post("/delete", async (req: Request, res: Response) => {
     try{
         const body: AttributeBody = req.body;
         const user: WithId<User> | null = await getReqUser(req);

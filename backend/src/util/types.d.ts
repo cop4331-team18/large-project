@@ -13,7 +13,8 @@ export type User = {
     isVerified: boolean,
     verificationToken?: string | null,
     attributes: string[],
-    projects: ObjectId[],
+    projects: ObjectId[],                //this is the projects the user created
+    joinedProjects: ObjectId[],          //this is the projects the user has joined
     swipeLeft: ObjectId[],
     swipeRight: ObjectId[],
 }
