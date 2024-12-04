@@ -1,7 +1,8 @@
-import React, { FormEvent } from "react";
+import React, { FormEvent, useState } from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
 import { apiCall } from "./util/constants";
+import { AttributesInput } from "./components/AttributesInput";
 
 interface SettingsProp {
   chatNotifications: number;
@@ -15,8 +16,11 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
   // const [email, setEmail] = useState<string>("");
   // const [bio, setBio] = useState<string>("");
 
+  const [attributesList, setAttributesList] = useState<string[]>([]);
+
   const handleSave = () => {
     alert("Profile saved successfully!");
+    console.log("Selected Attributes:", attributesList);
     // Add logic to save data to a backend or API
   };
 
@@ -130,13 +134,12 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
         {/* Attributes */}
         <div className="section">
           <h2>Attributes</h2>
-          <select multiple>
-            <option value="JavaScript">JavaScript</option>
-            <option value="Python">Python</option>
-            <option value="Java">Java</option>
-            <option value="C++">C++</option>
-            <option value="Ruby">Ruby</option>
-          </select>
+          {/* AttributesInput Component */}
+          <AttributesInput
+            setAttributesList={setAttributesList}
+            limit={5} 
+            placeholder="Search and select attributes"
+          />
         </div>
 
         <div className="settings-actions-container">
