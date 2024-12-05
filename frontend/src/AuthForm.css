@@ -1,4 +1,4 @@
-    .auth-page {
+    /* .auth-page {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -12,7 +12,28 @@
         display: flex;
         width: 90%;
         height: 58vh;
-    }
+    } */
+
+    .auth-page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full viewport height */
+        background-color: #727d8d; /* Background color for the page */
+      }
+      
+      /* Authentication container holding both panels */
+      .auth-container {
+        display: flex;
+        flex-direction: row;
+        width: 90%; /* Ensure container scales with screen size */
+        max-width: 1200px; /* Set a maximum width for large screens */
+        min-width: 700px; /* Set a minimum width for smaller screens */
+        background-color: #fff9eb; /* Background color for the container */
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
 
     .auth-left {
         flex: 1;
@@ -26,7 +47,8 @@
     .welcome-text {
         font-size: 2.5rem;
         font-weight: bold;
-        margin-bottom: 50px;
+        margin-bottom: 30px;
+        margin-top: 60px;
         color: #384055; /* Adjust color as needed */
     }
       
