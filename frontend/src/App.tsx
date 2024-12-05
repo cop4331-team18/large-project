@@ -165,7 +165,7 @@ function App() {
           } />
 
           <Route path="/settings" element={
-            <SettingsPage chatNotifications={chatNotifications} fetchUserStatus={fetchUserStatus}/>
+            <SettingsPage chatNotifications={chatNotifications} fetchUserStatus={fetchUserStatus} user={user}/>
           } />
 
           <Route

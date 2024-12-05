@@ -3,6 +3,7 @@ import { apiCall } from "../util/constants";
 import Select, { ActionMeta, MultiValue } from "react-select";
 
 interface AttributesInputProp {
+    oldAttributesList: string[],
     setAttributesList: React.Dispatch<React.SetStateAction<string[]>>;
     limit?: number;
     placeholder?: string;
@@ -13,7 +14,7 @@ interface Option {
     label: string;
 }
 
-export const AttributesInput: React.FC<AttributesInputProp> = ({setAttributesList, limit, placeholder}: AttributesInputProp) => {
+export const AttributesInput: React.FC<AttributesInputProp> = ({oldAttributesList, setAttributesList, limit, placeholder}: AttributesInputProp) => {
     const [validOptions, setValidOptions] = useState<Option[]>([]);
     const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
 
@@ -38,6 +39,14 @@ export const AttributesInput: React.FC<AttributesInputProp> = ({setAttributesLis
         } 
         setSelectedOptions([...selected]);
     }
+
+    useEffect(() => {
+        const newSelectedOptions: Option[] = [];
+        for (const attribute of oldAttributesList) {
+            newSelectedOptions.push({value: attribute, label: attribute});
+        }
+        setSelectedOptions(newSelectedOptions);
+    }, [oldAttributesList])
 
     useEffect(() => {
         const attributes: string[] = [];
