@@ -240,8 +240,8 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                             </div>
                           </div>
                           <div className="accept-reject-container">
-                            <button className="accept-btn">✅</button>
                             <button className="reject-btn">❌</button>
+                            <button className="accept-btn">✅</button>
                           </div>
                         </div>
                       </div>

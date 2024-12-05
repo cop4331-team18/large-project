@@ -172,12 +172,16 @@ select {
 
 /* Requests Dropdown */
 .requests-dropdown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   margin-top: 10px;
-  background: #f9f9f9; /* Light background */
+  background: #f9f9f9;
   padding: 10px;
   border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-  max-width: 300px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
 }
 
 .requests-dropdown p {
@@ -210,7 +214,8 @@ select {
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 1.2rem; /* Slightly larger for visibility */
+  font-size: 1.0rem; /* Slightly larger for visibility */
+  margin-top: 0;
 }
 
 .accept-btn {
@@ -230,8 +235,10 @@ select {
 }
 
 .accept-reject-container {
-  justify-content: center;
   display: flex;
+  justify-content: center;
+  margin-top: 5px;
+  width: 100%;
 }
 
 }
