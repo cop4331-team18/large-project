@@ -6,14 +6,14 @@ import { apiCall, MATCHING_OPTIONS_SIZE, Project, User } from "./util/constants"
 
 interface MatchingPageProps {
   chatNotifications: number;
+  userMap: Map<string, User>;
+  fetchUser: (id: string) => Promise<User>;
 }
 
-const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: MatchingPageProps) => {
-
+const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, fetchUser}: MatchingPageProps) => {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [attributesList, setAttributesList] = useState<string[]>([]);
   const [matchOptions, setMatchOptions] = useState<Project[]>([]);
-  const [matchOptionsCreatedBy, setMatchOptionsCreatedBy] = useState<Map<string, User>>(new Map());
   const [currentIndex, setCurrentIndex] = React.useState<number>(-1);
   const [hasNext, setHasNext] = useState<boolean>(true);
 
@@ -29,25 +29,14 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
     if (projects.length > 0) {
       setMatchOptions(projects);
       setCurrentIndex(0);
-      if (!matchOptionsCreatedBy.get(projects[0].createdBy)) {
-        const user = await fetchUser(projects[0].createdBy);
-        setMatchOptionsCreatedBy(prev => {
-          const newMap = new Map(prev);
-          newMap.set(user._id, user);
-          return newMap;
-        })
+      if (!userMap.get(projects[0].createdBy)) {
+        fetchUser(projects[0].createdBy);
       }
     } else {
       setCurrentIndex(-1); // No more projects
     }
     setHasNext(data.hasNext);
   };
-
-  const fetchUser = async (id: string): Promise<User> => {
-    const response = await apiCall.get(`/user/${id}`);
-    const data: any = response.data;
-    return data.user as User;
-  }
 
   useEffect(() => {
     fetchMoreOptions();
@@ -60,13 +49,8 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
     setTimeout(async () => {
       setSwipeDirection(null);
       if (currentIndex < matchOptions.length - 1) {
-        if (!matchOptionsCreatedBy.get(matchOptions[currentIndex+1].createdBy)) {
-          const user = await fetchUser(matchOptions[currentIndex+1].createdBy);
-          setMatchOptionsCreatedBy(prev => {
-            const newMap = new Map(prev);
-            newMap.set(user._id, user);
-            return newMap;
-          })
+        if (!userMap.get(matchOptions[currentIndex+1].createdBy)) {
+          await fetchUser(matchOptions[currentIndex+1].createdBy);
         }
         setCurrentIndex(prev => prev+1);
       } else if (hasNext) {
@@ -86,7 +70,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
       </div>
 
       {/* Current Profile */}
-      {currentIndex >= 0 && matchOptions[currentIndex] && matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy) ? (
+      {currentIndex >= 0 && matchOptions[currentIndex] && userMap.get(matchOptions[currentIndex].createdBy) ? (
         <div 
           key={matchOptions[currentIndex]._id} 
           className={`project-card ${
@@ -117,17 +101,17 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
           <div className="owner-info">
             <div className="section-header">
               <img src="/owner.svg" className="section-header-icon"/>
-              {matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.firstName && matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.lastName &&
-               `${matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.firstName} ${matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.lastName}`}
+              {userMap.get(matchOptions[currentIndex].createdBy)!.firstName && userMap.get(matchOptions[currentIndex].createdBy)!.lastName &&
+               `${userMap.get(matchOptions[currentIndex].createdBy)!.firstName} ${userMap.get(matchOptions[currentIndex].createdBy)!.lastName}`}
               <p className="matching-username-text">
-                {`@${matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.username}`}
+                {`@${userMap.get(matchOptions[currentIndex].createdBy)!.username}`}
               </p>  
             </div>
-            <p className="owner-bio">{!!matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.bio && 'User has no bio.'}</p>
+            <p className="owner-bio">{!!userMap.get(matchOptions[currentIndex].createdBy)!.bio && 'User has no bio.'}</p>
             {/* Need to add css for owner attributes (smaller) */}
             <div className="owner-attributes">
-              {matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.attributes.length === 0 && 'User has no attributes.'}
-              {matchOptionsCreatedBy.get(matchOptions[currentIndex].createdBy)!.attributes.map((attribute, index) => (
+              {userMap.get(matchOptions[currentIndex].createdBy)!.attributes.length === 0 && 'User has no attributes.'}
+              {userMap.get(matchOptions[currentIndex].createdBy)!.attributes.map((attribute, index) => (
                 <span key={index} className="owner-attribute-tag">{attribute}</span>
               ))}
             </div>
