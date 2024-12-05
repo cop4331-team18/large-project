@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
 import "./Projects.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
-import { apiCall, Project } from "./util/constants";
+import { apiCall, Project, User } from "./util/constants";
 
 interface ProjectsProps {
   chatNotifications: number;
   projects: Project[];
+  user: User | null;
 }
 
-const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: ProjectsProps) => {
+const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user }: ProjectsProps) => {
   const [currentProject, setCurrentProject] = useState<Project | null>(null); //update and edit 
-  const [setOldAttributesList] = useState<string[]>([]);
+  const [oldAttributesList, setOldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]); 
   const [projectName, setProjectName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -30,14 +31,23 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
   };
 
   //delete stuff, needs to be changed probably lmk 
-  const handleDeleteProject = async () => {
+  const handleDeleteProject = async (e: FormEvent, id: string) => {
+    e.preventDefault();
+    const button = e.currentTarget;
+    if (button.textContent === 'Delete') {
+      button.setAttribute('disabled', 'true');
+      for (let i = 3; i > 0; --i) {
+        button.textContent = `Confirm: (${i})`;
+        await new Promise((res) => setTimeout(res, 500));
+      }
+      button.textContent = `Confirm`;
+      button.removeAttribute('disabled');
+      return;
+    }
     try {
-      if(currentProject !== null){
-        const response = await apiCall.post(`/projects/delete/${currentProject._id}`);
-        if(response.status === 200) {
-          console.log("Project deleted successfully");
-          setCurrentProject(null); // Reset current project selection
-        }
+      const response = await apiCall.post(`/projects/delete/${id}`);
+      if(response.status === 200) {
+        console.log("Project deleted successfully");
       }
     } catch (error) {
       console.error("Project was not successfully deleted");
@@ -136,6 +146,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
         {/* Display Projects */}
         <div className="projects-list">
           {projects.map((project) => (
+            (!user || project.createdBy !== user._id) ? <div key={project._id}></div> :
             <div key={project._id} className="project-card">
               <h3>{project.name || "Untitled Project"}</h3>
               <p>{project.description || "No Description"}</p>
@@ -168,7 +179,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
                 </button>
                 <button
                   className="delete-btn"
-                  onClick={() => handleDeleteProject()} //i think this works not sure with api side
+                  onClick={(e: FormEvent) => handleDeleteProject(e, project._id)}
                 >
                   Delete
                 </button>
