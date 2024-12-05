@@ -198,10 +198,16 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
         {/* Display Projects */}
         <div className="projects-list">
           {projects.map((project) => (
-            (!user || project.createdBy !== user._id) ? <div key={project._id}></div> :
             <div key={project._id} className="project-card">
               <h3>{project.name || "Untitled Project"}</h3>
               <p>{project.description || "No Description"}</p>
+              <div>
+                {userMap.has(project.createdBy) && <p>Created by: <b>@{userMap.get(project.createdBy)!.username}</b></p>}
+              </div>
+              <div style={{overflowX: 'auto', whiteSpace: 'nowrap', scrollbarWidth: 'thin'}}>
+                {project.acceptedUsers.length === 0 ? <span><p>Accepted Users: <b>None</b></p></span>
+                : <span><p>Accepted Users: {project.acceptedUsers.map(userId => <span key={userId}><b style={{marginRight: '5px'}}>{userMap.has(userId) && `@${userMap.get(userId)!.username}`}</b></span>)}</p></span>}
+              </div>
               <div className="attributes">
                 {project.attributes.length > 0 ? (
                   project.attributes.map((attr, index) => (
@@ -213,7 +219,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                   <p>No Attributes</p>
                 )}
               </div>
-              <div className="project-actions">
+              {user && project.createdBy === user._id && <div className="project-actions">
                 <button
                   className="update-btn"
                   onClick={() => openUpdateProject(project)}
@@ -232,7 +238,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                 >
                   Delete
                 </button>
-              </div>
+              </div>}
 
               {/* Requests Dropdown */}
               {openRequests === project._id && (
@@ -244,9 +250,9 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                       <div key={userId} className="request-item">
                         <div>
                           <div>
-                            <p>
+                            <p><b>
                               @{userMap.get(userId)!.username}
-                            </p>
+                            </b></p>
                             <p>
                             {userMap.get(userId)!.bio}
                             </p>

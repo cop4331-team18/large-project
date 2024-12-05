@@ -8,10 +8,12 @@ import ProjectsPage from './Projects';
 import { apiCall, ChatMessage, Project, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
 import "./App.css"
+import Verification from './Verification';
 
-const AuthenticatedRoute = (props: {isLoggedIn: boolean | null}): JSX.Element => {
+const AuthenticatedRoute = (props: {isLoggedIn: boolean | null, user: User | null}): JSX.Element => {
   return (
-    props.isLoggedIn === false ? <Navigate to="/login"/> : <Outlet/>
+    props.isLoggedIn === false ? <Navigate to="/login"/> :
+    props.user && !props.user.isVerified ? <Navigate to="/verify"/> : <Outlet/>
   );
 };
 
@@ -208,7 +210,9 @@ function App() {
           element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>
         } />
 
-        <Route element={<AuthenticatedRoute isLoggedIn={isLoggedIn}/>}>
+        <Route path="/verify" element={<Verification fetchUserStatus={fetchUserStatus}/>}/>
+
+        <Route element={<AuthenticatedRoute isLoggedIn={isLoggedIn} user={user}/>}>
 
           <Route path="/" element={
             <MatchingPage chatNotifications={chatNotifications}userMap={userMap} fetchUser={fetchUser}/>

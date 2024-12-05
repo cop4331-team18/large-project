@@ -1,25 +1,10 @@
-/* Reset default margins and paddings */
-body,
-html {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  width: 100%;
-  height: 100%;
-}
-
-/* Apply to all elements */
-* {
-  box-sizing: inherit;
-}
-
 .verification-page {
   display: flex;
   justify-content: center; 
   align-items: center; 
   min-height: 100vh; 
   background-color: #727d8d;
-}
+
 
 .verification-container {
   background: #fff9eb;
@@ -45,4 +30,5 @@ html {
   font-size: 1.1rem;
   color: #727d8d;
   margin-bottom: 1rem;
+}
 }

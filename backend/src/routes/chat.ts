@@ -118,6 +118,7 @@ chatRouter.get("/getpage", async (req: Request, res: Response) => {
         const page: WithId<ChatMessage>[] = await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).find({
             project: new ObjectId(params.projectId),
             createdAt: {$lt : new Date(params.createdAtBefore)},
+            messageType: {$ne: 'READ'}
         }, {
             skip: pageNum*pageSize,
             limit: pageSize+1,
