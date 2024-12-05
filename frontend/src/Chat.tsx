@@ -7,14 +7,16 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 interface MessageViewProp {
   message: ChatMessage;
+  project: Project,
+  userMap: Map<string, User>
 }
 
-const MessageView: React.FC<MessageViewProp> = ({message}: MessageViewProp) => {
+const MessageView: React.FC<MessageViewProp> = ({message, project, userMap}: MessageViewProp) => {
   return (
+    message.messageType !== 'READ' ? 
     <div className="message-view">
       <div>
-        {/* TODO: need an endpoint or some way to fetch the user from backend */}
-        <span>{message.sender}</span>
+        <span><b>{message.sender && userMap.has(message.sender) && `@${userMap.get(message.sender)!.username}`}</b></span>
         <span><i>{getDateString(message.createdAt)}</i></span>
         <div className="message-text-and-read-container">
           <span>
@@ -22,12 +24,9 @@ const MessageView: React.FC<MessageViewProp> = ({message}: MessageViewProp) => {
           </span>
           <div className="read-icon">
             <div className="read-hover">
-              <p className="read-hover-username">@jasonpyau</p>
-              <p className="read-hover-username">@eric</p>
-              <p className="read-hover-username">@ahmad</p>
-              <p className="read-hover-username">@tiffany</p>
-              <p className="read-hover-username">@justin</p>
-              <p className="read-hover-username">@dylan</p>
+              {project && [...project.acceptedUsers, project.createdBy].map(userId => 
+                <p className="read-hover-username" key={userId}>{userMap.has(userId) && project.lastReadAt.find(val => userMap.get(userId)!._id === val.userId)!.date > message.createdAt && `@${userMap.get(userId)!.username}`}</p>
+              )}
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="black" className="bi bi-eye" viewBox="0 0 16 16">
               <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
@@ -37,17 +36,17 @@ const MessageView: React.FC<MessageViewProp> = ({message}: MessageViewProp) => {
         </div>
       </div>
     </div>
+    :
+    <></>
   );
 }
 
 interface ChatProps {
-  user: User | null;
   socket: Socket | null;
   socketEvents: Set<string>;
   setSocketEvents: React.Dispatch<React.SetStateAction<Set<string>>>;
   chatNotifications: number;
-  setChatNotifications: React.Dispatch<React.SetStateAction<number>>;
-  isLoggedIn: boolean | null;
+  fetchUserProjects: () => Promise<void>;
   newMessages: Map<string, ChatMessage[]>;
   setNewMessages: React.Dispatch<React.SetStateAction<Map<string, ChatMessage[]>>>;
   oldMessages: Map<string, ChatMessage[]>;
@@ -60,16 +59,16 @@ interface ChatProps {
   setOldMessagesViewDate: React.Dispatch<React.SetStateAction<Map<string, Date>>>;
   projects: Project[];
   setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
+  userMap: Map<string, User>;
+  fetchUser: (id: string) => Promise<User>;
 }
 
 const ChatPage: React.FC<ChatProps> = ({
-  user,
   socket, 
   socketEvents,
   setSocketEvents,
   chatNotifications,
-  setChatNotifications,
-  isLoggedIn,
+  fetchUserProjects,
   newMessages,
   setNewMessages,
   oldMessages,
@@ -82,6 +81,8 @@ const ChatPage: React.FC<ChatProps> = ({
   setOldMessagesViewDate,
   projects,
   setProjects,
+  userMap,
+  fetchUser,
 }: ChatProps) => {
   const [messageInput, setMessageInput] = useState<string>('');
   const [currentChat, setCurrentChat] = useState<string>('');
@@ -96,6 +97,9 @@ const ChatPage: React.FC<ChatProps> = ({
       if (!socketEvents.has("message-res")) {
         setSocketEvents(prev => prev.add("message-res"));
         socket.on("message-res", async (data: ChatMessage) => {
+          if (!userMap.get(data.sender)) {
+            await fetchUser(data.sender);
+          }
           if (data.messageType === 'CREATE') {
             setOldMessagesViewDate(prev => new Map(prev).set(data._id, new Date()));
             await fetchUserProjects();
@@ -130,7 +134,23 @@ const ChatPage: React.FC<ChatProps> = ({
                 updateProject.lastMessageAt = data.createdAt;
               }
               return copy;
-            })
+            });
+            if (currentChat === data.project) {
+              socket.emit("read", {message: '', project: currentChat});
+            }
+          }
+          if (data.messageType === 'READ') {
+            setProjects(prev => {
+              const copy = [...prev];
+              const updateProject = copy.find(val => val._id === data.project);
+              if (updateProject) {
+                const updateReadTime = updateProject.lastReadAt.find(val => val.userId === data.sender);
+                if (updateReadTime) {
+                  updateReadTime.date = data.createdAt;
+                }
+              }
+              return copy;
+            });
           }
         });
       }
@@ -147,30 +167,6 @@ const ChatPage: React.FC<ChatProps> = ({
       }
     }
   }, [socket, currentChat, projects, socketEvents, oldMessagesViewDate]);
-
-  const fetchUserProjects = async() => {
-    const response = await apiCall.get(`/projects/get`);
-    const data: any = response.data;
-    const projects: Project[] = data.projects;
-    if (projects.length === 0) {
-      setCurrentChat('');
-    } else if (projects.length > 0 && !currentChat) {
-      setCurrentChat(projects[0]._id);
-    }
-    setProjects(projects);
-    for (const project of projects) {
-      const lastReadAt = project.lastReadAt.find(val => user!._id === val.userId);
-      if (lastReadAt && project.lastMessageAt > lastReadAt.date) {
-        setChatNotifications(prev => prev+1);
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (isLoggedIn === true) {
-      fetchUserProjects();
-    }
-  }, [isLoggedIn]);
 
   useEffect(() => {
     let isSorted: boolean = true;
@@ -234,9 +230,13 @@ const ChatPage: React.FC<ChatProps> = ({
   useEffect(() => {
     if (currentChat && !oldMessages.get(currentChat)) {
       loadOldMessages();
-      if (socket) {
-        socket.emit("read", {message: '', project: currentChat});
-      }
+      // if (socket) {
+      //   socket.emit("read", {message: '', project: currentChat});
+      // }
+    }
+    // This is kinda bad but good enough for now.
+    if (currentChat && socket) {
+      socket.emit("read", {message: '', project: currentChat});
     }
   }, [currentChat]);
 
@@ -264,7 +264,7 @@ const ChatPage: React.FC<ChatProps> = ({
           <h1>{projects && currentChat && projects.find((project) => project._id === currentChat)!.name}</h1>
           <div className="message-container" id="message-container">
             {(newMessages.get(currentChat) || []).map(message => 
-              <MessageView key={message._id} message={message}/> 
+              <MessageView key={message._id} message={message} userMap={userMap} project={projects.find((project) => project._id === currentChat)!}/> 
             )}
             <InfiniteScroll
               dataLength={(oldMessages.get(currentChat) || []).length}
@@ -283,7 +283,7 @@ const ChatPage: React.FC<ChatProps> = ({
               {
                 (oldMessages.get(currentChat) || []).map(message =>
                   <div key={message._id}>
-                    <MessageView message={message}/>
+                    <MessageView userMap={userMap} message={message} project={projects.find((project) => project._id === currentChat)!}/>
                   </div>
                 )
               }

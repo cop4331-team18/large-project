@@ -48,7 +48,7 @@ export type ChatMessage = {
     project: ObjectId,
     sender: ObjectId,
     createdAt: Date,
-    messageType: 'CHAT' | 'CREATE' | 'UPDATE' | 'DELETE' | 'JOIN' | 'READ';
+    messageType: 'CHAT' | 'CREATE' | 'UPDATE' | 'DELETE' | 'SWIPE_RIGHT' | 'ACCEPT_USER' | 'READ';
 }
 
 declare global {

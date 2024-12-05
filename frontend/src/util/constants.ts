@@ -17,25 +17,29 @@ export type ChatMessage = {
     createdAt: string,
 } & Omit<BackendChatMessage, 'project' | 'sender' | 'createdAt'>;
 export type ChatMessageInput = BackendChatMessageInput;
+
 export type User = {
     '_id': string, 
     joinedAt: string,
     projects: string[],
+    joinedProjects: string[],
     swipeLeft: string[],
     swipeRight: string[],
-} & Omit<BackendUser, 'password' | 'salt' | 'verificationToken' | 'joinedAt' | 'projects' | 'swipeLeft' | 'swipeRight'>;
+} & Omit<BackendUser, 'password' | 'salt' | 'verificationToken' | 'joinedAt' | 'projects' | 'joinedProjects' | 'swipeLeft' | 'swipeRight'>;
 
 export type Project = {
     '_id': string,
     createdBy: string,
     swipeLeft: string[],
     swipeRight: string[],
+    acceptedUsers: string[],
+    rejectedUsers: string[],
     lastReadAt: {
         userId: string,
         date: string,
     }[],
     lastMessageAt: string,
-} & Omit<BackendProject, 'createdBy' | 'swipeLeft' | 'swipeRight' | 'lastReadAt' | 'lastMessageAt'>;
+} & Omit<BackendProject, 'createdBy' | 'swipeLeft' | 'swipeRight' | 'acceptedUsers' | 'rejectedUsers' | 'lastReadAt' | 'lastMessageAt'>;
 
 export const getDateString = (date: Date | string) => {
     return new Date(date).toLocaleString(undefined, {

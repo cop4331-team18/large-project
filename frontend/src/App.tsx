@@ -27,6 +27,7 @@ function App() {
   const [oldMessagesHasNext, setOldMessagesHasNext] = useState<Map<string, boolean>>(new Map());
   const [oldMessagesViewDate, setOldMessagesViewDate] = useState<Map<string, Date>>(new Map());
   const [projects, setProjects] = useState<Project[]>([]);
+  const [userMap, setUserMap] = useState<Map<string, User>>(new Map());
 
   const refreshSocket = (loginStatus: boolean) => {
     if (loginStatus) {
@@ -57,6 +58,48 @@ function App() {
     setUser(data.user as User);
     refreshSocket(data.loginStatus);
   };
+
+  const fetchUser = async (id: string): Promise<User> => {
+    const response = await apiCall.get(`/user/${id}`);
+    const data: any = response.data;
+    const user: User = data.user;
+    setUserMap(prev => {
+      const newMap = new Map(prev);
+      newMap.set(id, user);
+      return newMap;
+    });
+    return user;
+  }
+
+  const fetchUserProjects = async() => {
+    const response = await apiCall.get(`/projects/get`);
+    const data: any = response.data;
+    const projects: Project[] = data.projects;
+    setProjects(projects);
+    const set = new Set<string>;
+    for (const project of projects) {
+      for (const userId of [...project.acceptedUsers, ...project.swipeRight, project.createdBy]) {
+        set.add(userId);
+      }
+    }
+    await Promise.all([...set].map(async (userId) => await fetchUser(userId)));
+  };
+
+  useEffect(() => {
+    setChatNotifications(0);
+    for (const project of projects) {
+      const lastReadAt = project.lastReadAt.find(val => user!._id === val.userId);
+      if (lastReadAt && project.lastMessageAt > lastReadAt.date) {
+        setChatNotifications(prev => prev+1);
+      }
+    }
+  }, [projects]);
+
+  useEffect(() => {
+    if (isLoggedIn === true) {
+      fetchUserProjects();
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (user) {
@@ -90,22 +133,20 @@ function App() {
         <Route element={<AuthenticatedRoute isLoggedIn={isLoggedIn}/>}>
 
           <Route path="/" element={
-            <MatchingPage chatNotifications={chatNotifications}/>
+            <MatchingPage chatNotifications={chatNotifications}userMap={userMap} fetchUser={fetchUser}/>
           } />
          
           <Route path="/matching" element={
-            <MatchingPage chatNotifications={chatNotifications}/>
+            <MatchingPage chatNotifications={chatNotifications} userMap={userMap} fetchUser={fetchUser}/>
           } />
 
           <Route path="/chat" element={
             <ChatPage 
-              user={user}
               socket={socket}
               socketEvents={socketEvents}
               setSocketEvents={setSocketEvents}
               chatNotifications={chatNotifications}
-              setChatNotifications={setChatNotifications}
-              isLoggedIn={isLoggedIn}
+              fetchUserProjects={fetchUserProjects}
               newMessages={newMessages}
               setNewMessages={setNewMessages}
               oldMessages={oldMessages}
@@ -118,6 +159,8 @@ function App() {
               setOldMessagesViewDate={setOldMessagesViewDate}
               projects={projects}
               setProjects={setProjects}
+              userMap={userMap}
+              fetchUser={fetchUser}
             />
           } />
 

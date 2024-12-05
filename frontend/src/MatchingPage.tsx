@@ -2,136 +2,97 @@ import React, { useEffect, useState } from "react";
 import "./MatchingPage.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
-import { apiCall, MATCHING_OPTIONS_SIZE } from "./util/constants";
-
-// Mock Definitions (until backend connected)
-type ObjectId = string; // placeholder
-
-type User = {
-  firstName: string;
-  lastName: string;
-  attributes: string[];
-};
-
-type Project = {
-  name: string;
-  description: string;
-  attributes: string[];
-  createdBy: ObjectId;
-  owner: User;
-};
+import { apiCall, MATCHING_OPTIONS_SIZE, Project, User } from "./util/constants";
 
 interface MatchingPageProps {
   chatNotifications: number;
+  userMap: Map<string, User>;
+  fetchUser: (id: string) => Promise<User>;
 }
 
-const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: MatchingPageProps) => {
-
-  const mockProjects: Project[] = [
-    {
-      name: "MERN Stack App",
-      description: "An application that uses MongoDB, Express, React, and Node.js",
-      attributes: ["MongoDB", "Express", "React", "Node.js"],
-      createdBy: "1",
-      owner: {
-        firstName: "Alice",
-        lastName: "Smith",
-        attributes: ["JavaScript", "Python", "React", "Node.js"],
-      },
-    },
-    {
-      name: "Indie Game",
-      description: "A 2D platformer built with Unity targeting desktop platforms.",
-      attributes: ["Unity", "C++", "Python", "JavaScript", "Lua", "GDScript", "Shaders", "Unreal Engine", "WebSocket"],
-      createdBy: "2",
-      owner: {
-        firstName: "Bob",
-        lastName: "Johnson",
-        attributes: ["Unity", "Lua", "Game Design"],
-      },
-    },
-    {
-      name: "Cloud Infrastructure",
-      description: "A scalable backend infrastructure for microservices.",
-      attributes: ["Go", "Rust", "Ruby", "Bash", "Java", "C#"],
-      createdBy: "3",
-      owner: {
-        firstName: "Charlie",
-        lastName: "Brown",
-        attributes: ["Go", "C#", "Kubernetes"],
-      },
-    },
-  ];
-
-  const [currentIndex, setCurrentIndex] = React.useState(0);
+const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, fetchUser}: MatchingPageProps) => {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
   const [attributesList, setAttributesList] = useState<string[]>([]);
-  // const [matchOptions, setMatchOptions] = useState<Project[]>([]);
+  const [matchOptions, setMatchOptions] = useState<Project[]>([]);
+  const [currentIndex, setCurrentIndex] = React.useState<number>(-1);
+  const [hasNext, setHasNext] = useState<boolean>(true);
 
   const fetchMoreOptions = async() => {
-    apiCall.get("/projects/get-match-options", {
+    const response = await apiCall.get("/projects/get-match-options", {
       params: {
         pageSize: MATCHING_OPTIONS_SIZE,
         attributes: attributesList,
       }
     });
+    const data: any = response.data;
+    const projects: Project[] = data.projects;
+    if (projects.length > 0) {
+      setMatchOptions(projects);
+      setCurrentIndex(0);
+      if (!userMap.get(projects[0].createdBy)) {
+        fetchUser(projects[0].createdBy);
+      }
+    } else {
+      setCurrentIndex(-1); // No more projects
+    }
+    setHasNext(data.hasNext);
   };
 
   useEffect(() => {
     fetchMoreOptions();
   }, [attributesList]);
 
-  useEffect(() => {
-    console.log(attributesList);
-  }, [attributesList])
-
   const handleDecision = (decision: "accept" | "reject") => {
     setSwipeDirection(decision === "accept" ? "right" : "left");
 
     // Delay to load project after swipe
-    setTimeout(() => {
-        setSwipeDirection(null);
-        if (currentIndex < mockProjects.length - 1) {
-            setCurrentIndex(currentIndex + 1);
-        } else {
-            setCurrentIndex(-1); // No more projects
+    setTimeout(async () => {
+      setSwipeDirection(null);
+      if (currentIndex < matchOptions.length - 1) {
+        if (!userMap.get(matchOptions[currentIndex+1].createdBy)) {
+          await fetchUser(matchOptions[currentIndex+1].createdBy);
         }
+        setCurrentIndex(prev => prev+1);
+      } else if (hasNext) {
+        await fetchMoreOptions();
+      } else {
+        setCurrentIndex(-1); // No more projects
+      }
     }, 650); 
   };
-
-  const currentProject = currentIndex !== null && currentIndex < mockProjects.length 
-  ? mockProjects[currentIndex] 
-  : null;
 
   return (
     <div className="matching-page">
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
-      <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
+      <div className="matching-attributes-input">
+        <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
+      </div>
 
       {/* Current Profile */}
-      {currentProject ? (
+      {currentIndex >= 0 && matchOptions[currentIndex] && userMap.get(matchOptions[currentIndex].createdBy) ? (
         <div 
-          key={currentProject.name} 
+          key={matchOptions[currentIndex]._id} 
           className={`project-card ${
           swipeDirection === "right" ? "swipe-right" : ""
         } ${swipeDirection === "left" ? "swipe-left" : ""}`}
       >
         <div className="card-content">
           {/* Project Info */}
-          <h2 className="title">{currentProject.name}</h2>
-          <p className="project-description">{currentProject.description}</p>
+          <h2 className="title">{matchOptions[currentIndex].name}</h2>
+          <p className="project-description">{matchOptions[currentIndex].description}</p>
 
           {/* Project Attributes */}
           <div className="section-header">
             <img src="/tag.svg" className="section-header-icon"/>
             Attributes
           </div>
-          <div className="project-attributes">
-            {currentProject.attributes.map((attribute, index) => (
+          <p className="project-attributes">
+            {matchOptions[currentIndex].attributes.length === 0 && 'Project has no attributes.'}
+            {matchOptions[currentIndex].attributes.map((attribute, index) => (
               <span key={index} className="project-attribute-tag">{attribute}</span>
             ))}
-          </div>
+          </p>
 
           {/* Divider */}
           <hr className="section-divider" />
@@ -140,14 +101,17 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
           <div className="owner-info">
             <div className="section-header">
               <img src="/owner.svg" className="section-header-icon"/>
-              {currentProject.owner.firstName} {currentProject.owner.lastName}
+              {userMap.get(matchOptions[currentIndex].createdBy)!.firstName && userMap.get(matchOptions[currentIndex].createdBy)!.lastName &&
+               `${userMap.get(matchOptions[currentIndex].createdBy)!.firstName} ${userMap.get(matchOptions[currentIndex].createdBy)!.lastName}`}
+              <p className="matching-username-text">
+                {`@${userMap.get(matchOptions[currentIndex].createdBy)!.username}`}
+              </p>  
             </div>
-            <p className="owner-bio">This is the field for the bio. This would describe the user. Lorem ipsum dolor sit amet. Cum optio veniam ad voluptas recusandae 
-              ad provident facilis non laboriosam magni quo provident omnis ut corrupti galisum ut modi inventore. 
-              Sed laudantium vero cum dicta saepe non dolor tempore in corporis officia qui consectetur soluta vel corrupti dolores.</p>
+            <p className="owner-bio">{!!userMap.get(matchOptions[currentIndex].createdBy)!.bio && 'User has no bio.'}</p>
             {/* Need to add css for owner attributes (smaller) */}
             <div className="owner-attributes">
-              {currentProject.owner.attributes.map((attribute, index) => (
+              {userMap.get(matchOptions[currentIndex].createdBy)!.attributes.length === 0 && 'User has no attributes.'}
+              {userMap.get(matchOptions[currentIndex].createdBy)!.attributes.map((attribute, index) => (
                 <span key={index} className="owner-attribute-tag">{attribute}</span>
               ))}
             </div>
@@ -169,7 +133,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications}: Matching
           </div>
         </div>
       ) : (
-        <div className="no-projects-message">
+        !hasNext && <div className="no-projects-message">
           <h2>No Projects Left</h2>
           <p>Come back later for more matches!</p>
         </div>
