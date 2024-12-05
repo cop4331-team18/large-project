@@ -234,4 +234,22 @@ select {
   display: flex;
 }
 
+.section2 {
+  width: 93%; /* Takes up 90% of the screen width */
+  max-width: 700px;
+  background: #e0e6f7be;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  max-width: 100%;
+  margin-bottom: 30px; 
+
+}
+
+h5{
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
 }

@@ -131,8 +131,8 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
 
         {/* Update/Create Project Form */}
         {currentProject && (
-          <div className="section">
-            <h2>Update Project</h2>
+          <div className="section2">
+            <h5>Update Project</h5>
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="project-name">Name</label>
