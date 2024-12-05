@@ -1,53 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 import "./Projects.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
-
-interface Project {
-  id: number;
-  name: string;
-  description: string;
-  attributes: string[];
-}
+import { apiCall, Project } from "./util/constants";
 
 interface ProjectsProps {
   chatNotifications: number;
+  projects: Project[];
 }
 
-const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications }: ProjectsProps) => {
-  const [projects, setProjects] = useState<Project[]>([]);
+const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: ProjectsProps) => {
   const [currentProject, setCurrentProject] = useState<Project | null>(null); //update and edit 
-  const [attributesList, setAttributesList] = useState<string[]>([]); //
+  const [attributesList, setAttributesList] = useState<string[]>([]); 
+  const [projectName, setProjectName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
 
-  //create project with jack shit in it
-  const handleCreateBlankProject = () => {
-    const newProject: Project = {
-      id: Date.now(),
-      name: "",
-      description: "",
-      attributes: [],
-    };
-    setProjects((prevProjects) => [newProject, ...prevProjects]);
+
+  //create project
+  const handleCreateBlankProject = async () => {
+    try {
+      const response = await apiCall.post(`/projects/add`, {});
+      if (response.status === 200) {
+        console.log("Blank project created successfully!");
+      }
+    } catch (error) {
+      console.error("Project was not successfully added");
+    }
   };
 
   //delete stuff, needs to be changed probably lmk 
-  const handleDeleteProject = (id: number) => {
-    setProjects((prevProjects) => prevProjects.filter((project) => project.id !== id));
+  const handleDeleteProject = async () => {
+    try {
+      if(currentProject !== null){
+        const response = await apiCall.post(`/projects/delete/${currentProject._id}`);
+        if(response.status === 200) {
+          console.log("Project deleted successfully");
+          setCurrentProject(null); // Reset current project selection
+        }
+      }
+    } catch (error) {
+      console.error("Project was not successfully deleted");
+    }
   };
 
   //update for project code 
-  const handleUpdateProject = () => {
-    if (currentProject) {
-      setProjects((prevProjects) =>
-        prevProjects.map((project) =>
-          project.id === currentProject.id
-            ? { ...currentProject, attributes: attributesList }
-            : project
-        )
-      );
-      setCurrentProject(null); //clears it if not entered so we dont have fuckshit happening
+  const handleUpdateProject = async () => {
+    try {
+
+      if (!projectName || !description ) {
+        alert("Please fill in all the required fields");
+        return;
+      }
+
+      const response = await apiCall.post("/projects/update", {
+        _id: currentProject?._id,
+        name: projectName,
+        description: description,
+      });
+
+      if(response.status === 200) {
+        alert("Project updated successfully!");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
     }
-  };
+  };  
 
   return (
     <div className="projects-page">
@@ -111,7 +128,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications }: ProjectsPr
         {/* Display Projects */}
         <div className="projects-list">
           {projects.map((project) => (
-            <div key={project.id} className="project-card">
+            <div key={project._id} className="project-card">
               <h3>{project.name || "Untitled Project"}</h3>
               <p>{project.description || "No Description"}</p>
               <div className="attributes">
@@ -137,7 +154,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications }: ProjectsPr
                 </button>
                 <button
                   className="delete-btn"
-                  onClick={() => handleDeleteProject(project.id)} //i think this works not sure with api side
+                  onClick={() => handleDeleteProject()} //i think this works not sure with api side
                 >
                   Delete
                 </button>

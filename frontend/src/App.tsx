@@ -127,7 +127,8 @@ function App() {
 
           <Route
             path="/projects"element={
-            <ProjectsPage chatNotifications={chatNotifications}/>}
+            <ProjectsPage  projects={projects} chatNotifications={chatNotifications}/>}
+      
           />
 
           <Route path="*" element={
