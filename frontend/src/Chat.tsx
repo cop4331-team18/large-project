@@ -67,12 +67,8 @@ interface ChatProps {
 
 const ChatPage: React.FC<ChatProps> = ({
   socket, 
-  socketEvents,
-  setSocketEvents,
   chatNotifications,
-  fetchUserProjects,
   newMessages,
-  setNewMessages,
   oldMessages,
   setOldMessages,
   oldMessagesPageNum,
@@ -84,7 +80,6 @@ const ChatPage: React.FC<ChatProps> = ({
   projects,
   setProjects,
   userMap,
-  fetchUser,
   currentChat,
   setCurrentChat,
 }: ChatProps) => {
@@ -95,82 +90,6 @@ const ChatPage: React.FC<ChatProps> = ({
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
   };
-
-  // useEffect(() => {
-  //   if (socket) {
-  //     if (!socketEvents.has("message-res")) {
-  //       setSocketEvents(prev => prev.add("message-res"));
-  //       socket.on("message-res", async (data: ChatMessage) => {
-  //         if (!userMap.get(data.sender)) {
-  //           await fetchUser(data.sender);
-  //         }
-  //         if (data.messageType === 'CREATE') {
-  //           setOldMessagesViewDate(prev => new Map(prev).set(data._id, new Date()));
-  //           await fetchUserProjects();
-  //         } else if (data.messageType === 'UPDATE') {
-  //           await fetchUserProjects();
-  //         } else if (data.messageType === 'DELETE') {
-  //           if (currentChat === data.project) {
-  //             setCurrentChat('');
-  //           }
-  //           setProjects(prev => {
-  //             const newProjects = [];
-  //             for (const project of prev) {
-  //               if (project._id !== data.project) {
-  //                 newProjects.push(project);
-  //               }
-  //             }
-  //             return newProjects;
-  //           });
-  //           return; // Play around with this and make sure this always works
-  //         }
-  //         setNewMessages(prev => {
-  //           const newMap = new Map(prev);
-  //           const messages: ChatMessage[] = newMap.get(data.project) || [];
-  //           newMap.set(data.project, [data, ...messages]);
-  //           return newMap;
-  //         });
-  //         if (data.messageType !== 'READ') {
-  //           setProjects(prev => {
-  //             const copy = [...prev];
-  //             const updateProject = copy.find(val => val._id === data.project);
-  //             if (updateProject) {
-  //               updateProject.lastMessageAt = data.createdAt;
-  //             }
-  //             return copy;
-  //           });
-  //           if (currentChat === data.project) {
-  //             socket.emit("read", {message: '', project: currentChat});
-  //           }
-  //         }
-  //         if (data.messageType === 'READ') {
-  //           setProjects(prev => {
-  //             const copy = [...prev];
-  //             const updateProject = copy.find(val => val._id === data.project);
-  //             if (updateProject) {
-  //               const updateReadTime = updateProject.lastReadAt.find(val => val.userId === data.sender);
-  //               if (updateReadTime) {
-  //                 updateReadTime.date = data.createdAt;
-  //               }
-  //             }
-  //             return copy;
-  //           });
-  //         }
-  //       });
-  //     }
-  //   }
-  //   return () => {
-  //     if (socket) {
-  //       if (socketEvents.has("message-res")) {
-  //         socket.off("message-res");
-  //         setSocketEvents(prev => {
-  //           prev.delete("message-res");
-  //           return new Set(prev);
-  //         });
-  //       }
-  //     }
-  //   }
-  // }, [socket, currentChat, projects, socketEvents, oldMessagesViewDate]);
 
   useEffect(() => {
     let isSorted: boolean = true;

@@ -8,9 +8,10 @@ interface ProjectsProps {
   chatNotifications: number;
   projects: Project[];
   user: User | null;
+  userMap: Map<string, User>
 }
 
-const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user }: ProjectsProps) => {
+const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user, userMap }: ProjectsProps) => {
   const [currentProject, setCurrentProject] = useState<Project | null>(null); //update and edit 
   const [oldAttributesList, setOldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]); 
@@ -29,6 +30,17 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
       console.error("Project was not successfully added");
     }
   };
+
+  const openUpdateProject = (project: Project) => {
+    setCurrentProject(project);
+    setOldAttributesList(project.attributes);
+    setDescription(project.description);
+    setProjectName(project.name);
+    const scrollToElement = document.getElementById("project-header");
+    if (scrollToElement) {
+      scrollToElement.scrollIntoView();
+    }
+  }
 
   //delete stuff, needs to be changed probably lmk 
   const handleDeleteProject = async (e: FormEvent, id: string) => {
@@ -63,15 +75,32 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
         return;
       }
 
-      const response = await apiCall.post("/projects/update", {
-        _id: currentProject?._id,
-        name: projectName,
-        description: description,
-      });
+      if (currentProject) {
+        const response = await apiCall.post("/projects/update", {
+          id: currentProject._id,
+          name: projectName,
+          description: description,
+        });
 
-      if(response.status === 200) {
-        alert("Project updated successfully!");
+        for (const attribute of attributesList) {
+          if (!currentProject.attributes.includes(attribute)) {
+            await apiCall.post("/projects/attribute/add", { attribute: attribute, id: currentProject._id });
+          }
+        }
+  
+        for (const attribute of currentProject.attributes) {
+          if (!attributesList.includes(attribute)) {
+            await apiCall.post("/projects/attribute/delete", { attribute: attribute, id: currentProject._id });
+          }
+        }
+
+        
+        if(response.status === 200) {
+          alert("Project updated successfully!");
+          setCurrentProject(null);
+        }
       }
+
     } catch (error) {
       console.error("Error saving profile:", error);
     }
@@ -93,7 +122,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
       <Tabs currentTab="projects" chatNotifications={chatNotifications} />
 
       <div className="projects-container">
-        <h1>Projects</h1>
+        <h1 id="project-header">Projects</h1>
 
         {/* Create Blank Project Button */}
         <button className="create-btn top-btn" onClick={handleCreateBlankProject}>
@@ -111,7 +140,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                   id="project-name"
                   type="text"
                   placeholder="Project Name"
-                  value={currentProject.name}
+                  value={projectName}
                   onChange={handleProjectName}
                 />
               </div>
@@ -122,7 +151,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               <textarea
                 id="project-description"
                 placeholder="Project Description"
-                value={currentProject.description}
+                value={description}
                 onChange={handleDescription}
               />
             </div>
@@ -132,7 +161,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               <AttributesInput
                 oldAttributesList={oldAttributesList}
                 setAttributesList={setAttributesList}
-                limit={5}
+                limit={7}
                 placeholder="Search and select attributes"
               />
             </div>
@@ -164,19 +193,16 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               <div className="project-actions">
                 <button
                   className="update-btn"
-                  onClick={() => {
-                    setCurrentProject(project);
-                    setAttributesList(project.attributes);
-                  }}
+                  onClick={() => openUpdateProject(project)}
                 >
                   Update
                 </button>
-                <button
+                {project.swipeRight.length > 0 && <button
                   className="requests-btn"
                   onClick={() => toggleRequestsDropdown(project._id)}
                 >
                   Requests
-                </button>
+                </button>}
                 <button
                   className="delete-btn"
                   onClick={(e: FormEvent) => handleDeleteProject(e, project._id)}
@@ -188,17 +214,40 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               {/* Requests Dropdown */}
               {openRequests === project._id && (
                 <div className="requests-dropdown">
-                  <p>No API logic yet for this section.</p>
-                  <div className="request-item">
-                    <span>User 1</span>
-                    <button className="accept-btn">✅</button>
-                    <button className="reject-btn">❌</button>
-                  </div>
-                  <div className="request-item">
-                    <span>User 2</span>
-                    <button className="accept-btn">✅</button>
-                    <button className="reject-btn">❌</button>
-                  </div>
+                  {
+                    projects.find(val => val._id === openRequests) && projects.find(val => val._id === openRequests)!.swipeRight &&
+                    projects.find(val => val._id === openRequests)!.swipeRight.map(userId => 
+                      !userMap.get(userId) ? <div key={userId}></div> : 
+                      <div key={userId} className="request-item">
+                        <div>
+                          <div>
+                            <p>
+                              @{userMap.get(userId)!.username}
+                            </p>
+                            <p>
+                            {userMap.get(userId)!.bio}
+                            </p>
+                            <div className="attributes">
+                              {userMap.get(userId)!.attributes.length > 0 ? (
+                                userMap.get(userId)!.attributes.map((attr, index) => (
+                                  <span key={index} className="attribute-tag">
+                                    {attr}
+                                  </span>
+                                ))
+                              ) : (
+                                <p>No Attributes</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="accept-reject-container">
+                            <button className="accept-btn">✅</button>
+                            <button className="reject-btn">❌</button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  <></>
                 </div>
               )}
             </div>
