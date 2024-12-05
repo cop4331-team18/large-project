@@ -55,14 +55,14 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
 
       for (const attribute of attributesList) {
         if (user && !user.attributes.includes(attribute)) {
-          await apiCall.post("/user/attribute/add", { attribute });
+          await apiCall.post("/user/attribute/add", { attribute: attribute });
         }
       }
 
       if (user) {
         for (const attribute of user.attributes) {
           if (!attributesList.includes(attribute)) {
-            await apiCall.post("/user/attribute/delete", { attribute });
+            await apiCall.post("/user/attribute/delete", { attribute: attribute });
           }
         }
       }

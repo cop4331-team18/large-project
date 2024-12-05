@@ -30,6 +30,17 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
     }
   };
 
+  const openUpdateProject = (project: Project) => {
+    setCurrentProject(project);
+    setOldAttributesList(project.attributes);
+    setDescription(project.description);
+    setProjectName(project.name);
+    const scrollToElement = document.getElementById("project-header");
+    if (scrollToElement) {
+      scrollToElement.scrollIntoView();
+    }
+  }
+
   //delete stuff, needs to be changed probably lmk 
   const handleDeleteProject = async (e: FormEvent, id: string) => {
     e.preventDefault();
@@ -63,15 +74,32 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
         return;
       }
 
-      const response = await apiCall.post("/projects/update", {
-        _id: currentProject?._id,
-        name: projectName,
-        description: description,
-      });
+      if (currentProject) {
+        const response = await apiCall.post("/projects/update", {
+          id: currentProject._id,
+          name: projectName,
+          description: description,
+        });
 
-      if(response.status === 200) {
-        alert("Project updated successfully!");
+        for (const attribute of attributesList) {
+          if (!currentProject.attributes.includes(attribute)) {
+            await apiCall.post("/projects/attribute/add", { attribute: attribute, id: currentProject._id });
+          }
+        }
+  
+        for (const attribute of currentProject.attributes) {
+          if (!attributesList.includes(attribute)) {
+            await apiCall.post("/projects/attribute/delete", { attribute: attribute, id: currentProject._id });
+          }
+        }
+
+        
+        if(response.status === 200) {
+          alert("Project updated successfully!");
+          setCurrentProject(null);
+        }
       }
+
     } catch (error) {
       console.error("Error saving profile:", error);
     }
@@ -93,7 +121,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
       <Tabs currentTab="projects" chatNotifications={chatNotifications} />
 
       <div className="projects-container">
-        <h1>Projects</h1>
+        <h1 id="project-header">Projects</h1>
 
         {/* Create Blank Project Button */}
         <button className="create-btn top-btn" onClick={handleCreateBlankProject}>
@@ -111,7 +139,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                   id="project-name"
                   type="text"
                   placeholder="Project Name"
-                  value={currentProject.name}
+                  value={projectName}
                   onChange={handleProjectName}
                 />
               </div>
@@ -122,7 +150,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               <textarea
                 id="project-description"
                 placeholder="Project Description"
-                value={currentProject.description}
+                value={description}
                 onChange={handleDescription}
               />
             </div>
@@ -132,7 +160,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               <AttributesInput
                 oldAttributesList={oldAttributesList}
                 setAttributesList={setAttributesList}
-                limit={5}
+                limit={7}
                 placeholder="Search and select attributes"
               />
             </div>
@@ -164,10 +192,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               <div className="project-actions">
                 <button
                   className="update-btn"
-                  onClick={() => {
-                    setCurrentProject(project);
-                    setAttributesList(project.attributes);
-                  }}
+                  onClick={() => openUpdateProject(project)}
                 >
                   Update
                 </button>
