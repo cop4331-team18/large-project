@@ -14,7 +14,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
   const [attributesList, setAttributesList] = useState<string[]>([]); 
   const [projectName, setProjectName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
-
+  const [openRequests, setOpenRequests] = useState<string | null>(null); // Stores the ID of the project with open requests
 
   //create project
   const handleCreateBlankProject = async () => {
@@ -70,6 +70,11 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
     setProjectName(e.target.value);
   const handleDescription = (e: ChangeEvent<HTMLTextAreaElement>) =>
     setDescription(e.target.value);
+
+  // Toggle requests dropdown
+  const toggleRequestsDropdown = (projectId: string) => {
+    setOpenRequests((prev) => (prev === projectId ? null : projectId));
+  };
 
   return (
     <div className="projects-page">
@@ -154,12 +159,35 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
                   Update
                 </button>
                 <button
+                  className="requests-btn"
+                  onClick={() => toggleRequestsDropdown(project._id)}
+                >
+                  Requests
+                </button>
+                <button
                   className="delete-btn"
                   onClick={() => handleDeleteProject()} //i think this works not sure with api side
                 >
                   Delete
                 </button>
               </div>
+
+              {/* Requests Dropdown */}
+              {openRequests === project._id && (
+                <div className="requests-dropdown">
+                  <p>No API logic yet for this section.</p>
+                  <div className="request-item">
+                    <span>User 1</span>
+                    <button className="accept-btn">✅</button>
+                    <button className="reject-btn">❌</button>
+                  </div>
+                  <div className="request-item">
+                    <span>User 2</span>
+                    <button className="accept-btn">✅</button>
+                    <button className="reject-btn">❌</button>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -153,4 +153,79 @@ select {
   gap: 10px;
   margin-top: 10px;
 }
+/* Requests Button */
+.requests-btn {
+  background-color: #e6e6e6; /* Light gray background */
+  color: black; /* Black text color */
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.requests-btn:hover {
+  background-color: #cccccc; /* Darker gray on hover */
+}
+
+/* Requests Dropdown */
+.requests-dropdown {
+  margin-top: 10px;
+  background: #f9f9f9; /* Light background */
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  max-width: 300px;
+}
+
+.requests-dropdown p {
+  font-size: 0.9rem;
+  color: #666; /* Slightly muted text color */
+  margin-bottom: 10px;
+}
+
+/* Request Items */
+.request-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd; /* Divider between items */
+}
+
+.request-item:last-child {
+  border-bottom: none; /* Remove border from the last item */
+}
+
+.request-item span {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+/* Accept and Reject Buttons */
+.accept-btn,
+.reject-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 1.2rem; /* Slightly larger for visibility */
+}
+
+.accept-btn {
+  color: green; /* Green checkmark */
+}
+
+.accept-btn:hover {
+  color: darkgreen; /* Darker green on hover */
+}
+
+.reject-btn {
+  color: red; /* Red cross */
+}
+
+.reject-btn:hover {
+  color: darkred; /* Darker red on hover */
+}
+
 }
