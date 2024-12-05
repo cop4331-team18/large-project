@@ -42,6 +42,7 @@ const MessageView: React.FC<MessageViewProp> = ({message, project, userMap}: Mes
 }
 
 interface ChatProps {
+  user: User | null;
   socket: Socket | null;
   socketEvents: Set<string>;
   setSocketEvents: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -66,6 +67,7 @@ interface ChatProps {
 }
 
 const ChatPage: React.FC<ChatProps> = ({
+  user,
   socket, 
   chatNotifications,
   newMessages,
@@ -84,7 +86,6 @@ const ChatPage: React.FC<ChatProps> = ({
   setCurrentChat,
 }: ChatProps) => {
   const [messageInput, setMessageInput] = useState<string>('');
-  // const [currentChat, setCurrentChat] = useState<string>('');
   const [isLoadingOldMessages, setIsLoadingOldMessages] = useState<boolean>(false);
 
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -177,9 +178,13 @@ const ChatPage: React.FC<ChatProps> = ({
           {projects.length === 0 && <p>No projects found!</p>}
           {projects.map((project) => 
             <div className="chat-project" key={project._id} onClick={() => setCurrentChat(project._id)} style={{cursor: 'pointer',  background: (project._id === currentChat) ? 'Gainsboro' : ''}}>
-              <p>
+              {user && project.lastReadAt.find(val => val.userId === user._id) && project.lastMessageAt > project.lastReadAt.find(val => val.userId === user._id)!.date ?  
+              <p><b>
                 {project.name}
-              </p>
+              </b></p>
+              :
+              <p>{project.name}</p>
+              }
             </div>
           )}
         </div>

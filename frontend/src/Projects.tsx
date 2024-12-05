@@ -83,6 +83,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
           alert("Rejected user successfully!");
         }
       }
+      setOpenRequests(null);
     } catch (error) {
       console.log(error);
     }

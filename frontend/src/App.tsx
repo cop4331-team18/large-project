@@ -64,7 +64,7 @@ function App() {
           if (data.messageType === 'CREATE') {
             setOldMessagesViewDate(prev => new Map(prev).set(data._id, new Date()));
             await fetchUserProjects();
-          } else if (data.messageType === 'UPDATE') {
+          } else if (data.messageType === 'UPDATE' || data.messageType === 'SWIPE_RIGHT' || data.messageType === 'ACCEPT_USER') {
             await fetchUserProjects();
           } else if (data.messageType === 'DELETE') {
             if (currentChat === data.project) {
@@ -220,6 +220,7 @@ function App() {
 
           <Route path="/chat" element={
             <ChatPage 
+              user={user}
               socket={socket}
               socketEvents={socketEvents}
               setSocketEvents={setSocketEvents}
