@@ -8,9 +8,10 @@ interface ProjectsProps {
   chatNotifications: number;
   projects: Project[];
   user: User | null;
+  userMap: Map<string, User>
 }
 
-const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user }: ProjectsProps) => {
+const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user, userMap }: ProjectsProps) => {
   const [currentProject, setCurrentProject] = useState<Project | null>(null); //update and edit 
   const [oldAttributesList, setOldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]); 
@@ -196,12 +197,12 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                 >
                   Update
                 </button>
-                <button
+                {project.swipeRight.length > 0 && <button
                   className="requests-btn"
                   onClick={() => toggleRequestsDropdown(project._id)}
                 >
                   Requests
-                </button>
+                </button>}
                 <button
                   className="delete-btn"
                   onClick={(e: FormEvent) => handleDeleteProject(e, project._id)}
@@ -213,17 +214,40 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
               {/* Requests Dropdown */}
               {openRequests === project._id && (
                 <div className="requests-dropdown">
-                  <p>No API logic yet for this section.</p>
-                  <div className="request-item">
-                    <span>User 1</span>
-                    <button className="accept-btn">✅</button>
-                    <button className="reject-btn">❌</button>
-                  </div>
-                  <div className="request-item">
-                    <span>User 2</span>
-                    <button className="accept-btn">✅</button>
-                    <button className="reject-btn">❌</button>
-                  </div>
+                  {
+                    projects.find(val => val._id === openRequests) && projects.find(val => val._id === openRequests)!.swipeRight &&
+                    projects.find(val => val._id === openRequests)!.swipeRight.map(userId => 
+                      !userMap.get(userId) ? <div key={userId}></div> : 
+                      <div key={userId} className="request-item">
+                        <div>
+                          <div>
+                            <p>
+                              @{userMap.get(userId)!.username}
+                            </p>
+                            <p>
+                            {userMap.get(userId)!.bio}
+                            </p>
+                            <div className="attributes">
+                              {userMap.get(userId)!.attributes.length > 0 ? (
+                                userMap.get(userId)!.attributes.map((attr, index) => (
+                                  <span key={index} className="attribute-tag">
+                                    {attr}
+                                  </span>
+                                ))
+                              ) : (
+                                <p>No Attributes</p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="accept-reject-container">
+                            <button className="accept-btn">✅</button>
+                            <button className="reject-btn">❌</button>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  <></>
                 </div>
               )}
             </div>

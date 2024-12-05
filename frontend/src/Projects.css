@@ -228,4 +228,9 @@ select {
   color: darkred; /* Darker red on hover */
 }
 
+.accept-reject-container {
+  justify-content: center;
+  display: flex;
+}
+
 }

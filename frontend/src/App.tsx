@@ -250,7 +250,7 @@ function App() {
 
           <Route
             path="/projects"element={
-            <ProjectsPage  projects={projects} chatNotifications={chatNotifications} user={user}/>}
+            <ProjectsPage  projects={projects} chatNotifications={chatNotifications} user={user} userMap={userMap}/>}
       
           />
 
