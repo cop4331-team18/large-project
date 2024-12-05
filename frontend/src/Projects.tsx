@@ -66,6 +66,11 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
     }
   };  
 
+  const handleProjectName = (e: ChangeEvent<HTMLInputElement>) =>
+    setProjectName(e.target.value);
+  const handleDescription = (e: ChangeEvent<HTMLTextAreaElement>) =>
+    setDescription(e.target.value);
+
   return (
     <div className="projects-page">
       {/* Tabs */}
@@ -91,9 +96,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
                   type="text"
                   placeholder="Project Name"
                   value={currentProject.name}
-                  onChange={(e) =>
-                    setCurrentProject({ ...currentProject, name: e.target.value })
-                  }
+                  onChange={handleProjectName}
                 />
               </div>
             </div>
@@ -104,9 +107,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
                 id="project-description"
                 placeholder="Project Description"
                 value={currentProject.description}
-                onChange={(e) =>
-                  setCurrentProject({ ...currentProject, description: e.target.value })
-                }
+                onChange={handleDescription}
               />
             </div>
 
