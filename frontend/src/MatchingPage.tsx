@@ -43,8 +43,23 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, 
     fetchMoreOptions();
   }, [attributesList]);
 
-  const handleDecision = (decision: "accept" | "reject") => {
+
+
+  const handleDecision = async (decision: "accept" | "reject") => {
     setSwipeDirection(decision === "accept" ? "right" : "left");
+
+    try {
+      const apiPath = decision === "accept" ? "/projects/swipeRight" : "/projects/swipeLeft";
+      const response = await apiCall.post(apiPath, {
+        projectId: matchOptions[currentIndex]._id
+      } )
+
+      if(response.status === 200) {
+        console.log("Swipe successfully documented");
+      }
+    } catch (error) {
+      console.error("Something went wrong with documenting your swipe", error);
+    }
 
     // Delay to load project after swipe
     setTimeout(async () => {
