@@ -1,22 +1,41 @@
-import React, { FormEvent, useState, ChangeEvent } from "react";
+import React, { FormEvent, useState, ChangeEvent, useEffect } from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
-import { apiCall } from "./util/constants";
+import { apiCall, User } from "./util/constants";
 import { AttributesInput } from "./components/AttributesInput";
 
 interface SettingsProp {
   chatNotifications: number;
   fetchUserStatus: () => Promise<void>;
+  user: User | null;
 }
 
-const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStatus }: SettingsProp) => {
+const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStatus, user}: SettingsProp) => {
 
   const [bio, setBio] = useState<string>("");
+  const [oldAttributesList, setOldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]);
   const [firstName, setFirstName] = useState<string>("");
   const [lastName, setLastName] = useState<string>("");
- 
 
+  const resetFields = () => {
+    if (user) {
+      setFirstName(user.firstName);
+      setLastName(user.lastName);
+      setBio(user.bio);
+      setOldAttributesList([...user.attributes]);
+    } else {
+      setFirstName('');
+      setLastName('');
+      setBio('');
+      setOldAttributesList([]);
+    }
+  }
+
+  useEffect(() => {
+    resetFields();
+  }, [user]);
+ 
   const handleSave = async () => {
     try {
       // Validate input
@@ -33,14 +52,25 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
       });
 
       // Handle attributes separately
-      if (attributesList.length > 0) {
-        for (const attribute of attributesList) {
+
+      for (const attribute of attributesList) {
+        if (user && !user.attributes.includes(attribute)) {
           await apiCall.post("/user/attribute/add", { attribute });
+        }
+      }
+
+      if (user) {
+        for (const attribute of user.attributes) {
+          if (!attributesList.includes(attribute)) {
+            await apiCall.post("/user/attribute/delete", { attribute });
+          }
         }
       }
 
       if (response.status === 200) {
         alert("Profile updated successfully!");
+        await fetchUserStatus();
+        resetFields();
       } else {
         alert("Failed to save changes. Please try again.");
       }
@@ -51,12 +81,7 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
   };
 
   const handleCancel = () => {
-    // Reset all fields to empty strings
-    setFirstName("");
-    setLastName("");
-    setBio("");
-    setAttributesList([]);
-    //alert("Form has been reset!");
+    resetFields();
   };
 
   const handleLogout = async (e: FormEvent) => {
@@ -132,7 +157,7 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
               <input
                 id="username"
                 type="text"
-                placeholder="Username"
+                placeholder={user ? user.username : ''}
                 
                 readOnly
               />
@@ -142,7 +167,7 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
               <input
                 id="email"
                 type="email"
-                placeholder="Email"
+                placeholder={user ? user.email : ''}
                 readOnly // Make it read-only
               />
             </div>
@@ -164,8 +189,9 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
           <h2>Attributes</h2>
           {/* AttributesInput Component */}
           <AttributesInput
+            oldAttributesList={oldAttributesList}
             setAttributesList={setAttributesList}
-            limit={5}
+            limit={7}
             placeholder="Search and select attributes"
           />
         </div>

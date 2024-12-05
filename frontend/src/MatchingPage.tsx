@@ -12,6 +12,7 @@ interface MatchingPageProps {
 
 const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, fetchUser}: MatchingPageProps) => {
   const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(null);
+  const [oldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]);
   const [matchOptions, setMatchOptions] = useState<Project[]>([]);
   const [currentIndex, setCurrentIndex] = React.useState<number>(-1);
@@ -66,7 +67,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, 
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
       <div className="matching-attributes-input">
-        <AttributesInput setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
+        <AttributesInput oldAttributesList={oldAttributesList} setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
       </div>
 
       {/* Current Profile */}
