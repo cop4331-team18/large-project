@@ -66,6 +66,28 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
     }
   };
 
+  const handleAcceptOrReject = async(userId: string, projectId: string, type: 'ACCEPT' | 'REJECT') => {
+    try {
+      const body = {
+        projectId: projectId,
+        collaborator: userId,
+      };
+      if (type === 'ACCEPT') {
+        const response = await apiCall.post(`/projects/acceptUser`, body);
+        if (response.status === 200) {
+          alert("Accepted user successfully!");
+        }
+      } else if (type === 'REJECT') {
+        const response = await apiCall.post(`/projects/rejectUser`, body);
+        if (response.status === 200) {
+          alert("Rejected user successfully!");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   //update for project code 
   const handleUpdateProject = async () => {
     try {
@@ -131,8 +153,8 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
 
         {/* Update/Create Project Form */}
         {currentProject && (
-          <div className="section">
-            <h2>Update Project</h2>
+          <div className="section2">
+            <h5>Update Project</h5>
             <div className="form-row">
               <div className="form-group">
                 <label htmlFor="project-name">Name</label>
@@ -197,7 +219,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                 >
                   Update
                 </button>
-                {project.swipeRight.length > 0 && <button
+                {/*project.swipeRight.length*/ new Set(project.swipeRight).size !== (new Set(project.acceptedUsers).size+new Set(project.rejectedUsers).size)  && <button
                   className="requests-btn"
                   onClick={() => toggleRequestsDropdown(project._id)}
                 >
@@ -217,7 +239,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                   {
                     projects.find(val => val._id === openRequests) && projects.find(val => val._id === openRequests)!.swipeRight &&
                     projects.find(val => val._id === openRequests)!.swipeRight.map(userId => 
-                      !userMap.get(userId) ? <div key={userId}></div> : 
+                      !userMap.get(userId) && ![...projects.find(val => val._id === openRequests)!.acceptedUsers, ...projects.find(val => val._id === openRequests)!.rejectedUsers].includes(userId) ? <div key={userId}></div> : 
                       <div key={userId} className="request-item">
                         <div>
                           <div>
@@ -240,8 +262,8 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                             </div>
                           </div>
                           <div className="accept-reject-container">
-                            <button className="reject-btn">❌</button>
-                            <button className="accept-btn">✅</button>
+                            <button className="accept-btn" onClick={() => handleAcceptOrReject(userId, openRequests, 'ACCEPT')}>✅</button>
+                            <button className="reject-btn" onClick={() => handleAcceptOrReject(userId, openRequests, 'REJECT')}>❌</button>
                           </div>
                         </div>
                       </div>
