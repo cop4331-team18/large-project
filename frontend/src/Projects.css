@@ -15,7 +15,8 @@
     border-radius: 20px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
-    max-width: 90%; 
+    max-width: 90%;
+    margin-bottom: 30px; 
   }
 
 .section {
@@ -94,12 +95,12 @@ select {
 }
 
 .update-btn {
-  background-color: #057aff9c;
-  color: black;
+  background-color: #3e5a9b ;
+  color: rgb(255, 255, 255);
 }
 
 .update-btn:hover {
-  background-color: #3ff5af;
+  background-color: #323c53;
 }
 
 .delete-btn {
