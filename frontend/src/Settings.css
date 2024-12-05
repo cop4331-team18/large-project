@@ -7,6 +7,7 @@
     flex-direction: column;
     justify-content: flex-start; 
     align-items: center; 
+    margin-bottom: 30px;
   
   .settings-container {
     width: 90%; /* Takes up 90% of the screen width */
@@ -138,6 +139,10 @@
   }
 
   .log-out-btn:hover {
+    background-color: #bbb;
+  }
+
+  .undo-btn:hover {
     background-color: #bbb;
   }
 }
