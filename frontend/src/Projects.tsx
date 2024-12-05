@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState } from "react";
 import "./Projects.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
@@ -11,6 +11,7 @@ interface ProjectsProps {
 
 const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: ProjectsProps) => {
   const [currentProject, setCurrentProject] = useState<Project | null>(null); //update and edit 
+  const [setOldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]); 
   const [projectName, setProjectName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -113,6 +114,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects }: 
             <div className="section">
               <h3>Attributes</h3>
               <AttributesInput
+                oldAttributesList={oldAttributesList}
                 setAttributesList={setAttributesList}
                 limit={5}
                 placeholder="Search and select attributes"

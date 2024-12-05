@@ -16,7 +16,7 @@ const MessageView: React.FC<MessageViewProp> = ({message, project, userMap}: Mes
     message.messageType !== 'READ' ? 
     <div className="message-view">
       <div>
-        <span><b>{message.sender && userMap.has(message.sender) && `@${userMap.get(message.sender)!.username}`}</b></span>
+        <span><b>{message.messageType ==='CHAT' && message.sender && userMap.has(message.sender) && `@${userMap.get(message.sender)!.username}`}</b></span>
         <span><i>{getDateString(message.createdAt)}</i></span>
         <div className="message-text-and-read-container">
           <span>
