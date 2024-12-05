@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useState, ChangeEvent } from "react";
 import "./Settings.css";
 import Tabs from "./components/Tabs";
 import { apiCall } from "./util/constants";
@@ -9,56 +9,75 @@ interface SettingsProp {
   fetchUserStatus: () => Promise<void>;
 }
 
-// ADD "useEffect" TO IMPORT REACT WHEN UNCOMMENTING!!!!!!
-const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatus}: SettingsProp) => {
-  // const [firstName, setFirstName] = useState<string>("");
-  // const [lastName, setLastName] = useState<string>("");
-  // const [username, setUsername] = useState<string>("");
-  // const [email, setEmail] = useState<string>("");
-  // const [bio, setBio] = useState<string>("");
+const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStatus }: SettingsProp) => {
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       const response = await apiCall.get("/user/profile"); // Replace with your API endpoint
-  //       const data = response.data;
-  //       setFirstName(data.firstName || "");
-  //       setLastName(data.lastName || "");
-  //       setUsername(data.username || "");
-  //       setEmail(data.email || ""); // Set the email from the backend
-  //       setBio(data.bio || "");
-  //     } catch (error) {
-  //       console.error("Error fetching user data:", error);
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, []);
-
+  const [bio, setBio] = useState<string>("");
   const [attributesList, setAttributesList] = useState<string[]>([]);
+  const [firstName, setFirstName] = useState<string>("");
+  const [lastName, setLastName] = useState<string>("");
+ 
 
-  const handleSave = () => {
-    alert("Profile saved successfully!");
-    console.log("Selected Attributes:", attributesList);
-    // Add logic to save data to a backend or API
+  const handleSave = async () => {
+    try {
+      // Validate input
+      if (!firstName || !lastName || !bio) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      // Call the update user API
+      const response = await apiCall.post("/user/update", {
+        firstName,
+        lastName,
+        bio,
+      });
+
+      // Handle attributes separately
+      if (attributesList.length > 0) {
+        for (const attribute of attributesList) {
+          await apiCall.post("/user/attribute/add", { attribute });
+        }
+      }
+
+      if (response.status === 200) {
+        alert("Profile updated successfully!");
+      } else {
+        alert("Failed to save changes. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      alert("An error occurred while saving. Please try again.");
+    }
   };
 
   const handleCancel = () => {
-    alert("Changes canceled!");
-    // Reset form or navigate away if needed
+    // Reset all fields to empty strings
+    setFirstName("");
+    setLastName("");
+    setBio("");
+    setAttributesList([]);
+    //alert("Form has been reset!");
   };
 
   const handleLogout = async (e: FormEvent) => {
     e.preventDefault();
     try {
-        const response = await apiCall.post("/login/logout");
-        if (response.status === 200) {
-            fetchUserStatus();
-        }
+      const response = await apiCall.post("/login/logout");
+      if (response.status === 200) {
+        fetchUserStatus();
+      }
     } catch (error) {
-        console.log(error);
+      console.log(error);
     }
-  }
+    };
+
+  // Input Handlers
+  const handleFirstNameChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setFirstName(e.target.value);
+  const handleLastNameChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setLastName(e.target.value);
+  const handleBioChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
+    setBio(e.target.value);
 
   const handleUndoAllLeftSwipes = async(e: FormEvent) => {
     e.preventDefault();
@@ -76,14 +95,12 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
   return (
     <div className="settings-page">
       {/* Tabs */}
-      <Tabs chatNotifications={chatNotifications} currentTab="settings"/>
-
+      <Tabs chatNotifications={chatNotifications} currentTab="settings" />
 
       {/* Main Settings Content */}
       <div className="settings-container">
         <h1>Account Settings</h1>
 
-      
         {/* User Information */}
         <div className="section">
           <h2>User Information</h2>
@@ -94,6 +111,8 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
                 id="first-name"
                 type="text"
                 placeholder="First Name"
+                value={firstName}
+                onChange={handleFirstNameChange}
               />
             </div>
             <div className="form-group">
@@ -102,6 +121,8 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
                 id="last-name"
                 type="text"
                 placeholder="Last Name"
+                value={lastName}
+                onChange={handleLastNameChange}
               />
             </div>
           </div>
@@ -112,6 +133,8 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
                 id="username"
                 type="text"
                 placeholder="Username"
+                
+                readOnly
               />
             </div>
             <div className="form-group">
@@ -120,6 +143,7 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
                 id="email"
                 type="email"
                 placeholder="Email"
+                readOnly // Make it read-only
               />
             </div>
           </div>
@@ -130,6 +154,8 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
           <h2>Bio</h2>
           <textarea
             placeholder="Write a short bio about yourself"
+            value={bio}
+            onChange={handleBioChange}
           />
         </div>
 
@@ -139,10 +165,12 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
           {/* AttributesInput Component */}
           <AttributesInput
             setAttributesList={setAttributesList}
+            limit={5}
             placeholder="Search and select attributes"
           />
         </div>
 
+        {/* Action Buttons */}
         <div className="settings-actions-container">
           {/* Log Out Button */}
           <div className="logout-actions">
@@ -164,7 +192,6 @@ const SettingsPage: React.FC<SettingsProp> = ({chatNotifications, fetchUserStatu
             </button>
           </div>
         </div>
-        
       </div>
     </div>
   );
