@@ -51,7 +51,7 @@ export const chatSocketEvents = (io: Server) => {
                     userId: user._id,
                     date: new Date(),
                 };
-                await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: project._id}, {$pull: {lastReadAt: {userId: user._id}}});
+                await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: project._id}, {$pull: {lastReadAt: {userId: {$in: [user._id, new ObjectId(user._id)]}}}});
                 await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne({_id: project._id}, {$addToSet: {lastReadAt: newLastReadAt}});
                 // Definitely don't need to save this but just to utilize DRY at frontend.
                 await sendToAllMembers(project, await saveMessageToDatabase(message), io);
@@ -118,6 +118,7 @@ chatRouter.get("/getpage", async (req: Request, res: Response) => {
         const page: WithId<ChatMessage>[] = await db.collection<ChatMessage>(CHAT_COLLECTION_NAME).find({
             project: new ObjectId(params.projectId),
             createdAt: {$lt : new Date(params.createdAtBefore)},
+            messageType: {$ne: 'READ'}
         }, {
             skip: pageNum*pageSize,
             limit: pageSize+1,

@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import logo from "./devswipe_logo.png";
 
 interface TabsPop {
     chatNotifications: number;
@@ -31,17 +30,9 @@ const Tabs: React.FC<TabsPop> = ({currentTab, chatNotifications}: TabsPop) => {
             </div>}
 
             <div className="logo-container">
-                <img src={logo} alt="Logo" className="tabs-logo" />
+                <img src="/devswipe_logo.png" alt="Logo" className="tabs-logo" />
             </div>
             
-            {currentTab === "settings" ? 
-            <div className="tab active">
-                <span>Settings</span>
-            </div>
-            :
-            <div className="tab" onClick={() => navigate("/settings")}>
-                <span>Settings</span>
-            </div>}
             {currentTab === "projects" ? 
             <div className="tab active">
                 <span>Projects</span>
@@ -49,6 +40,15 @@ const Tabs: React.FC<TabsPop> = ({currentTab, chatNotifications}: TabsPop) => {
             :
             <div className="tab" onClick={() => navigate("/projects")}>
                 <span>Projects</span>
+            </div>}
+
+            {currentTab === "settings" ? 
+            <div className="tab active">
+                <span>Settings</span>
+            </div>
+            :
+            <div className="tab" onClick={() => navigate("/settings")}>
+                <span>Settings</span>
             </div>}
       </div>
     );

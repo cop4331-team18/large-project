@@ -8,10 +8,12 @@ import ProjectsPage from './Projects';
 import { apiCall, ChatMessage, Project, SERVER_BASE_URL, User } from './util/constants';
 import { io, Socket } from 'socket.io-client';
 import "./App.css"
+import Verification from './Verification';
 
-const AuthenticatedRoute = (props: {isLoggedIn: boolean | null}): JSX.Element => {
+const AuthenticatedRoute = (props: {isLoggedIn: boolean | null, user: User | null}): JSX.Element => {
   return (
-    props.isLoggedIn === false ? <Navigate to="/login"/> : <Outlet/>
+    props.isLoggedIn === false ? <Navigate to="/login"/> :
+    props.user && !props.user.isVerified ? <Navigate to="/verify"/> : <Outlet/>
   );
 };
 
@@ -56,13 +58,18 @@ function App() {
   useEffect(() => {
     if (socket) {
       if (!socketEvents.has("message-res")) {
-        setSocketEvents(prev => prev.add("message-res"));
+        setSocketEvents(prev => {
+          const newSet = new Set(prev);
+          newSet.add("message-res");
+          return newSet;
+        });
         socket.on("message-res", async (data: ChatMessage) => {
           if (!userMap.get(data.sender)) {
             await fetchUser(data.sender);
           }
-          if (data.messageType === 'CREATE') {
-            setOldMessagesViewDate(prev => new Map(prev).set(data._id, new Date()));
+          if (data.messageType === 'CREATE' || (user && data.message.split(' ').length > 2 && data.messageType === 'ACCEPT_USER' && data.message.split(' ')[2].replace('@', '') === user.username)) {
+            // User just joined this project
+            setOldMessagesViewDate(prev => new Map(prev).set(data.project, new Date()));
             await fetchUserProjects();
           } else if (data.messageType === 'UPDATE' || data.messageType === 'SWIPE_RIGHT' || data.messageType === 'ACCEPT_USER') {
             await fetchUserProjects();
@@ -71,7 +78,7 @@ function App() {
               setCurrentChat('');
             }
             setProjects(prev => {
-              const newProjects = [];
+              const newProjects: Project[] = [];
               for (const project of prev) {
                 if (project._id !== data.project) {
                   newProjects.push(project);
@@ -96,7 +103,8 @@ function App() {
               }
               return copy;
             });
-            if (currentChat === data.project) {
+            // Better way to do this, but this will do.
+            if (currentChat === data.project && window.location.pathname === "/chat") {
               socket.emit("read", {message: '', project: currentChat});
             }
           }
@@ -121,13 +129,14 @@ function App() {
         if (socketEvents.has("message-res")) {
           socket.off("message-res");
           setSocketEvents(prev => {
-            prev.delete("message-res");
-            return new Set(prev);
+            const newSet = new Set(prev);
+            newSet.delete("message-res");
+            return newSet;
           });
         }
       }
     }
-  }, [socket, currentChat, projects, socketEvents, oldMessagesViewDate]);
+  }, [socket, socketEvents, currentChat, userMap, user]);
 
   const fetchUserStatus = async () => {
     const response = await apiCall.get(`/login/status`);
@@ -162,6 +171,20 @@ function App() {
     }
     await Promise.all([...set].map(async (userId) => await fetchUser(userId)));
   };
+
+  useEffect(() => {
+    let isSorted: boolean = true;
+    for (let i = 0; i < projects.length-1; ++i) {
+      if (projects[i].lastMessageAt.localeCompare(projects[i+1].lastMessageAt) < 0) {
+        isSorted = false;
+      }
+    }
+    if (!isSorted) {
+      setProjects(prev => {
+        return [...prev].sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
+      });
+    }
+  }, [projects]);
 
   useEffect(() => {
     setChatNotifications(0);
@@ -208,10 +231,12 @@ function App() {
           element={<AuthForm fetchUserStatus={fetchUserStatus} isLoggedIn={isLoggedIn}/>
         } />
 
-        <Route element={<AuthenticatedRoute isLoggedIn={isLoggedIn}/>}>
+        <Route path="/verify" element={<Verification fetchUserStatus={fetchUserStatus} user={user}/>}/>
+
+        <Route element={<AuthenticatedRoute isLoggedIn={isLoggedIn} user={user}/>}>
 
           <Route path="/" element={
-            <MatchingPage chatNotifications={chatNotifications}userMap={userMap} fetchUser={fetchUser}/>
+            <MatchingPage chatNotifications={chatNotifications} userMap={userMap} fetchUser={fetchUser}/>
           } />
          
           <Route path="/matching" element={
@@ -237,7 +262,6 @@ function App() {
               oldMessagesViewDate={oldMessagesViewDate}
               setOldMessagesViewDate={setOldMessagesViewDate}
               projects={projects}
-              setProjects={setProjects}
               userMap={userMap}
               fetchUser={fetchUser}
               currentChat={currentChat}
@@ -251,7 +275,7 @@ function App() {
 
           <Route
             path="/projects"element={
-            <ProjectsPage  projects={projects} chatNotifications={chatNotifications} user={user} userMap={userMap}/>}
+            <ProjectsPage  projects={projects} chatNotifications={chatNotifications} user={user} userMap={userMap} setCurrentChat={setCurrentChat}/>}
       
           />
 

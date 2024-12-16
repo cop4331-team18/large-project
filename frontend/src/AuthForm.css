@@ -5,7 +5,7 @@
     align-items: center;
     height: 100vh; 
     background-color: #727d8d; 
-}
+
     
     
 .auth-container {
@@ -93,4 +93,5 @@ button {
     margin-top: 1rem;
     width: 100%;
     border-radius: 10px;
+}
 }

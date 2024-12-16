@@ -82,7 +82,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, 
       <Tabs currentTab="matching" chatNotifications={chatNotifications}/>
 
       <div className="matching-attributes-input">
-        <AttributesInput oldAttributesList={oldAttributesList} setAttributesList={setAttributesList} limit={5} placeholder="Filter Attributes"/>
+        <AttributesInput oldAttributesList={oldAttributesList} setAttributesList={setAttributesList} limit={5} placeholder="Filter Project Attributes"/>
       </div>
 
       {/* Current Profile */}
@@ -123,7 +123,7 @@ const MatchingPage: React.FC<MatchingPageProps> = ({chatNotifications, userMap, 
                 {`@${userMap.get(matchOptions[currentIndex].createdBy)!.username}`}
               </p>  
             </div>
-            <p className="owner-bio">{!!userMap.get(matchOptions[currentIndex].createdBy)!.bio && 'User has no bio.'}</p>
+            <p className="owner-bio">{userMap.get(matchOptions[currentIndex].createdBy)!.bio || 'User has no bio.'}</p>
             {/* Need to add css for owner attributes (smaller) */}
             <div className="owner-attributes">
               {userMap.get(matchOptions[currentIndex].createdBy)!.attributes.length === 0 && 'User has no attributes.'}

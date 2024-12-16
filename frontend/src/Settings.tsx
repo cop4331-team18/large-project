@@ -68,7 +68,7 @@ const SettingsPage: React.FC<SettingsProp> = ({ chatNotifications, fetchUserStat
       }
 
       if (response.status === 200) {
-        alert("Profile updated successfully!");
+        // alert("Profile updated successfully!");
         await fetchUserStatus();
         resetFields();
       } else {

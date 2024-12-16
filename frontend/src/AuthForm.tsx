@@ -2,7 +2,6 @@ import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import "./AuthForm.css";
 import { apiCall } from "./util/constants";
 import { useNavigate } from "react-router-dom";
-import logo from "./components/devswipe_logo.png";
 
 interface AuthFormProps {
   fetchUserStatus: () => Promise<void>,
@@ -59,7 +58,7 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
         lastName,
       });
       if (response.status === 200) {
-        alert("Signup successful! Please verify your email."); // TODO: delete after
+        // alert("Signup successful! Please verify your email."); // TODO: delete after
         fetchUserStatus();
       }
     } catch (error: any) {
@@ -87,7 +86,7 @@ function AuthForm({ fetchUserStatus, isLoggedIn }: AuthFormProps) {
       <div className="auth-container">
         <div className="auth-left">
           <h1 className="welcome-text">Welcome!</h1>
-          <img src={logo} alt="Logo" className="auth-logo" />
+          <img src="/devswipe_logo.png" alt="Logo" className="auth-logo" />
         </div>
 
         <div className="auth-right"> 

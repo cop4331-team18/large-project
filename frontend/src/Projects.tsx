@@ -2,22 +2,25 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import "./Projects.css";
 import Tabs from "./components/Tabs";
 import { AttributesInput } from "./components/AttributesInput";
-import { apiCall, Project, User } from "./util/constants";
+import { apiCall, getDateString, Project, User } from "./util/constants";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectsProps {
   chatNotifications: number;
   projects: Project[];
   user: User | null;
-  userMap: Map<string, User>
+  userMap: Map<string, User>;
+  setCurrentChat: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user, userMap }: ProjectsProps) => {
+const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, user, userMap, setCurrentChat }: ProjectsProps) => {
   const [currentProject, setCurrentProject] = useState<Project | null>(null); //update and edit 
   const [oldAttributesList, setOldAttributesList] = useState<string[]>([]);
   const [attributesList, setAttributesList] = useState<string[]>([]); 
   const [projectName, setProjectName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [openRequests, setOpenRequests] = useState<string | null>(null); // Stores the ID of the project with open requests
+  const navigate = useNavigate();
 
   //create project
   const handleCreateBlankProject = async () => {
@@ -46,24 +49,24 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
   const handleDeleteProject = async (e: FormEvent, id: string) => {
     e.preventDefault();
     const button = e.currentTarget;
+    button.setAttribute('disabled', 'true');
     if (button.textContent === 'Delete') {
-      button.setAttribute('disabled', 'true');
       for (let i = 3; i > 0; --i) {
         button.textContent = `Confirm: (${i})`;
         await new Promise((res) => setTimeout(res, 500));
       }
       button.textContent = `Confirm`;
-      button.removeAttribute('disabled');
-      return;
-    }
-    try {
-      const response = await apiCall.post(`/projects/delete/${id}`);
-      if(response.status === 200) {
-        console.log("Project deleted successfully");
+    } else {
+      try {
+        const response = await apiCall.post(`/projects/delete/${id}`);
+        if(response.status === 200) {
+          console.log("Project deleted successfully");
+        }
+      } catch (error) {
+        console.error("Project was not successfully deleted");
       }
-    } catch (error) {
-      console.error("Project was not successfully deleted");
     }
+    button.removeAttribute('disabled');
   };
 
   const handleAcceptOrReject = async(userId: string, projectId: string, type: 'ACCEPT' | 'REJECT') => {
@@ -75,12 +78,12 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
       if (type === 'ACCEPT') {
         const response = await apiCall.post(`/projects/acceptUser`, body);
         if (response.status === 200) {
-          alert("Accepted user successfully!");
+          // alert("Accepted user successfully!");
         }
       } else if (type === 'REJECT') {
         const response = await apiCall.post(`/projects/rejectUser`, body);
         if (response.status === 200) {
-          alert("Rejected user successfully!");
+          // alert("Rejected user successfully!");
         }
       }
       setOpenRequests(null);
@@ -90,7 +93,10 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
   }
 
   //update for project code 
-  const handleUpdateProject = async () => {
+  const handleUpdateProject = async (e: FormEvent) => {
+    e.preventDefault();
+    const button = e.currentTarget;
+    button.setAttribute('disabled', 'true');
     try {
 
       if (!projectName || !description ) {
@@ -119,7 +125,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
 
         
         if(response.status === 200) {
-          alert("Project updated successfully!");
+          // alert("Project updated successfully!");
           setCurrentProject(null);
         }
       }
@@ -127,6 +133,7 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
     } catch (error) {
       console.error("Error saving profile:", error);
     }
+    button.removeAttribute('disabled');
   };  
 
   const handleProjectName = (e: ChangeEvent<HTMLInputElement>) =>
@@ -198,10 +205,19 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
         {/* Display Projects */}
         <div className="projects-list">
           {projects.map((project) => (
-            (!user || project.createdBy !== user._id) ? <div key={project._id}></div> :
             <div key={project._id} className="project-card">
               <h3>{project.name || "Untitled Project"}</h3>
               <p>{project.description || "No Description"}</p>
+              <div>
+                {userMap.has(project.createdBy) && <p>Created by: <b>@{userMap.get(project.createdBy)!.username}</b></p>}
+              </div>
+              <div>
+                <p>Last Activity: <b>{getDateString(project.lastMessageAt)}</b></p>
+              </div>
+              <div style={{overflowX: 'auto', whiteSpace: 'nowrap', scrollbarWidth: 'thin'}}>
+                {project.acceptedUsers.length === 0 ? <span><p>Accepted Users: <b>None</b></p></span>
+                : <span><p>Accepted Users: {project.acceptedUsers.map(userId => <span key={userId}><b style={{marginRight: '5px'}}>{userMap.has(userId) && `@${userMap.get(userId)!.username}`}</b></span>)}</p></span>}
+              </div>
               <div className="attributes">
                 {project.attributes.length > 0 ? (
                   project.attributes.map((attr, index) => (
@@ -213,26 +229,32 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                   <p>No Attributes</p>
                 )}
               </div>
-              <div className="project-actions">
-                <button
+              {user && <div className="project-actions">
+                {project.createdBy === user._id && <button
                   className="update-btn"
                   onClick={() => openUpdateProject(project)}
                 >
                   Update
+                </button>}
+                <button className="open-chat-btn" onClick={() => {
+                  setCurrentChat(project._id);
+                  navigate("/chat");
+                }}>
+                  Open Chat
                 </button>
-                {/*project.swipeRight.length*/ new Set(project.swipeRight).size !== (new Set(project.acceptedUsers).size+new Set(project.rejectedUsers).size)  && <button
+                {project.createdBy === user._id && new Set(project.swipeRight).size !== (new Set(project.acceptedUsers).size+new Set(project.rejectedUsers).size)  && <button
                   className="requests-btn"
                   onClick={() => toggleRequestsDropdown(project._id)}
                 >
                   Requests
                 </button>}
-                <button
+                {project.createdBy === user._id && <button
                   className="delete-btn"
                   onClick={(e: FormEvent) => handleDeleteProject(e, project._id)}
                 >
                   Delete
-                </button>
-              </div>
+                </button>}
+              </div>}
 
               {/* Requests Dropdown */}
               {openRequests === project._id && (
@@ -240,13 +262,13 @@ const ProjectsPage: React.FC<ProjectsProps> = ({ chatNotifications, projects, us
                   {
                     projects.find(val => val._id === openRequests) && projects.find(val => val._id === openRequests)!.swipeRight &&
                     projects.find(val => val._id === openRequests)!.swipeRight.map(userId => 
-                      !userMap.get(userId) && ![...projects.find(val => val._id === openRequests)!.acceptedUsers, ...projects.find(val => val._id === openRequests)!.rejectedUsers].includes(userId) ? <div key={userId}></div> : 
+                      !userMap.get(userId) || [...projects.find(val => val._id === openRequests)!.acceptedUsers, ...projects.find(val => val._id === openRequests)!.rejectedUsers].includes(userId) ? <div key={userId}></div> : 
                       <div key={userId} className="request-item">
                         <div>
                           <div>
-                            <p>
+                            <p><b>
                               @{userMap.get(userId)!.username}
-                            </p>
+                            </b></p>
                             <p>
                             {userMap.get(userId)!.bio}
                             </p>

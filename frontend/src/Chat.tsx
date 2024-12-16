@@ -59,7 +59,6 @@ interface ChatProps {
   oldMessagesViewDate: Map<string, Date>;
   setOldMessagesViewDate: React.Dispatch<React.SetStateAction<Map<string, Date>>>;
   projects: Project[];
-  setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
   userMap: Map<string, User>;
   fetchUser: (id: string) => Promise<User>;
   currentChat: string,
@@ -80,7 +79,6 @@ const ChatPage: React.FC<ChatProps> = ({
   oldMessagesViewDate,
   setOldMessagesViewDate,
   projects,
-  setProjects,
   userMap,
   currentChat,
   setCurrentChat,
@@ -91,20 +89,6 @@ const ChatPage: React.FC<ChatProps> = ({
   const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageInput(e.target.value);
   };
-
-  useEffect(() => {
-    let isSorted: boolean = true;
-    for (let i = 0; i < projects.length-1; ++i) {
-      if (projects[i].lastMessageAt.localeCompare(projects[i+1].lastMessageAt) < 0) {
-        isSorted = false;
-      }
-    }
-    if (!isSorted) {
-      setProjects(prev => {
-        return [...prev].sort((a, b) => b.lastMessageAt.localeCompare(a.lastMessageAt));
-      });
-    }
-  }, [projects]);
 
   const sendChatMessage = (e: FormEvent) => {
     e.preventDefault();
@@ -152,15 +136,17 @@ const ChatPage: React.FC<ChatProps> = ({
   }
 
   useEffect(() => {
-    if (currentChat && !oldMessages.get(currentChat)) {
-      loadOldMessages();
-      // if (socket) {
-      //   socket.emit("read", {message: '', project: currentChat});
-      // }
-    }
-    // This is kinda bad but good enough for now.
-    if (currentChat && socket) {
-      socket.emit("read", {message: '', project: currentChat});
+    if (currentChat) {
+      if (!oldMessages.get(currentChat)) {
+        loadOldMessages();
+      }
+      const project = projects.find(val => val._id === currentChat);
+      if (project) {
+        const lastReadAt = project.lastReadAt.find(val => user!._id === val.userId);
+        if (socket && lastReadAt && project.lastMessageAt > lastReadAt.date) {
+          socket.emit("read", {message: '', project: currentChat});
+        }
+      }
     }
   }, [currentChat]);
 
@@ -189,9 +175,9 @@ const ChatPage: React.FC<ChatProps> = ({
           )}
         </div>
         <div className="right-panel">
-          <h1>{projects && currentChat && projects.find((project) => project._id === currentChat)!.name}</h1>
+          <h1>{projects && currentChat && projects.find((project) => project._id === currentChat) && projects.find((project) => project._id === currentChat)!.name}</h1>
           <div className="message-container" id="message-container">
-            {(newMessages.get(currentChat) || []).map(message => 
+            {projects.find((project) => project._id === currentChat) && (newMessages.get(currentChat) || []).map(message => 
               <MessageView key={message._id} message={message} userMap={userMap} project={projects.find((project) => project._id === currentChat)!}/> 
             )}
             <InfiniteScroll
@@ -209,7 +195,7 @@ const ChatPage: React.FC<ChatProps> = ({
               scrollableTarget="message-container"
             >
               {
-                (oldMessages.get(currentChat) || []).map(message =>
+                projects.find((project) => project._id === currentChat) && (oldMessages.get(currentChat) || []).map(message =>
                   <div key={message._id}>
                     <MessageView userMap={userMap} message={message} project={projects.find((project) => project._id === currentChat)!}/>
                   </div>

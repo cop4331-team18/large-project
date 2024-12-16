@@ -10,7 +10,7 @@ import {
 } from "../util/constants";
 import { getReqUser } from "./login";
 import { WithId, ObjectId, Filter } from "mongodb";
-import { User, Project, ChatMessage } from "../util/types";
+import { User, Project, ChatMessage, ProjectLastReadAt } from "../util/types";
 import { db } from "../util/db";
 import { io } from "../server";
 import { saveMessageToDatabase, sendToAllMembers } from "./chat";
@@ -113,7 +113,7 @@ projectRouter.get("/get-match-options", async (req: Request, res: Response) => {
     if (params.attributes && params.attributes.length > 0) {
       filter.attributes = {$all: params.attributes}
     };
-    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).find(filter, {limit: pageSize+1}).toArray();
+    const page: WithId<Project>[] = await db.collection<Project>(PROJECT_COLLECTION_NAME).aggregate<WithId<Project>>([{$match: filter}, {$sample: {size: pageSize+1}}]).toArray();
     let hasNext = false;
     if (page.length === pageSize+1) {
       hasNext = true;
@@ -146,6 +146,11 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
   }
 
   try {
+    // 01/01/1970 UTC, the beginning of time...
+    const lastReadAt: ProjectLastReadAt = {
+      userId: user._id,
+      date: new Date(0),
+  };
     //adds new blank project to the project database
     const insertResult = await db.collection<Project>(PROJECT_COLLECTION_NAME).insertOne({
         name: "New Project",
@@ -156,7 +161,7 @@ projectRouter.post("/add", async (req: Request, res: Response) => {
         swipeRight: [],
         acceptedUsers: [],
         rejectedUsers: [],
-        lastReadAt: [],
+        lastReadAt: [lastReadAt],
         lastMessageAt: new Date(),
       });
 
@@ -304,7 +309,7 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
       returnWithErrorJson(res, "Only project creator can update project");
       return;
     }
-    await db
+    const updateResult = await db
       .collection<Project>(PROJECT_COLLECTION_NAME)
       .updateOne({ 
           _id: new ObjectId(body.id),
@@ -313,14 +318,16 @@ projectRouter.post("/update", async (req: Request, res: Response) => {
         { $set: { name: body.name, description: body.description } }
       );
 
-    const updateProjectMessage: ChatMessage = {
-      message: `Project was updated by @${user.username}`,
-      project: new ObjectId(body.id),
-      sender: user._id,
-      createdAt: new Date(),
-      messageType: 'UPDATE',
-    };
-    await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
+    if (updateResult.modifiedCount === 1) {
+      const updateProjectMessage: ChatMessage = {
+        message: `Project was updated by @${user.username}`,
+        project: new ObjectId(body.id),
+        sender: user._id,
+        createdAt: new Date(),
+        messageType: 'UPDATE',
+      };
+      await sendToAllMembers(new ObjectId(body.id), await saveMessageToDatabase(updateProjectMessage), io);
+    }
 
     res.status(200).json({
       message: "Project updated successfully.",
@@ -366,7 +373,7 @@ projectRouter.post("/attribute/add", async (req: Request, res: Response) => {
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
       const updateProjectMessage: ChatMessage = {
-        message: `Project was updated by @${user.username}`,
+        message: `@${user.username} added the attribute '${body.attribute}' to the project`,
         project: new ObjectId(body.id),
         sender: user._id,
         createdAt: new Date(),
@@ -415,7 +422,7 @@ projectRouter.post("/attribute/delete", async (req: Request, res: Response) => {
     //return status on added attribute
     if (updateResult.modifiedCount === 1) {
       const updateProjectMessage: ChatMessage = {
-        message: `Project was updated by @${user.username}`,
+        message: `@${user.username} deleted the attribute '${body.attribute}' to the project`,
         project: new ObjectId(body.id),
         sender: user._id,
         createdAt: new Date(),
@@ -543,7 +550,7 @@ projectRouter.post("/swipeRight", async (req: Request, res: Response) => {
   
     if (updateProjectSwipe.modifiedCount === 1 && updateUserSwipe.modifiedCount === 1) {
       const swipeRightUserMessage: ChatMessage = {
-        message: `${user.username} swiped right on the project`,
+        message: `@${user.username} swiped right on the project`,
         project: new ObjectId(body.projectId),
         sender: user._id,
         createdAt: new Date(),
@@ -577,6 +584,11 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
    //check if user has verified email
    if (!user.isVerified) {
     returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  if (!user.projects.find(val => val.equals(new ObjectId(body.projectId)))) {
+    returnWithErrorJson(res, "Only project creator can accept user");
     return;
   }
 
@@ -616,12 +628,18 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
       returnWithErrorJson(res, "Collaborator has been accepted or rejected already");
       return;
     } 
+
+    // 01/01/1970 UTC, the beginning of time...
+    const collaboratorLastReadAt: ProjectLastReadAt = {
+      userId: new ObjectId(body.collaborator),
+      date: new Date(0),
+    };
     
 
     //adds collaborator to the project
     const acceptUser = await db.collection<Project>(PROJECT_COLLECTION_NAME).updateOne(
       { _id : new ObjectId(body.projectId) },
-      { $addToSet : { acceptedUsers: new ObjectId(body.collaborator) } }
+      { $addToSet : { acceptedUsers: new ObjectId(body.collaborator), lastReadAt: collaboratorLastReadAt } }
     );
 
     //once accepted, this wil update the Collaborators profile to show that it joined
@@ -632,7 +650,7 @@ projectRouter.post("/acceptUser", async (req: Request, res: Response) => {
 
     if (acceptUser.modifiedCount === 1 && joinedProject.modifiedCount === 1) {
       const acceptUserMessage: ChatMessage = {
-        message: `${user.username} added ${collaboratorUser.username} to the project`,
+        message: `@${user.username} added @${collaboratorUser.username} to the project`,
         project: new ObjectId(body.projectId),
         sender: user._id,
         createdAt: new Date(),
@@ -669,6 +687,11 @@ projectRouter.post("/rejectUser", async (req: Request, res: Response) => {
    //check if user has verified email
    if (!user.isVerified) {
     returnWithErrorJson(res, "User email is not verified");
+    return;
+  }
+
+  if (!user.projects.find(val => val.equals(new ObjectId(body.projectId)))) {
+    returnWithErrorJson(res, "Only project creator can reject user");
     return;
   }
 

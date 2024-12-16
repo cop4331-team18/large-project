@@ -155,7 +155,7 @@ select {
   margin-top: 10px;
 }
 /* Requests Button */
-.requests-btn {
+.requests-btn, .open-chat-btn {
   background-color: #e6e6e6; /* Light gray background */
   color: black; /* Black text color */
   border: none;
@@ -166,7 +166,7 @@ select {
   transition: background-color 0.3s ease;
 }
 
-.requests-btn:hover {
+.requests-btn:hover, .open-chat-btn:hover {
   background-color: #cccccc; /* Darker gray on hover */
 }
 
@@ -258,5 +258,10 @@ h5{
   font-size: 1.2rem;
   margin-bottom: 10px;
   color: #333;
+}
+button {
+  margin-top: 1rem;
+  width: 100%;
+  border-radius: 10px;
 }
 }
